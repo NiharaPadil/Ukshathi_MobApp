@@ -181,16 +181,39 @@ db.getConnection((err, connection) => {
 });
 
 // Fetch valves based on node ID
+// app.get('/nodes/:node_id/valves', (req, res) => {
+//     const { node_id } = req.params;
+//     const query = 'SELECT * FROM Valves WHERE node_id = ?';
+//     db.query(query, [node_id], (err, results) => {
+//         if (err) {
+//             return res.status(500).json({ message: 'Database error', error: err });
+//         }
+//         res.json(results);
+//     });
+// });
 app.get('/nodes/:node_id/valves', (req, res) => {
-    const { node_id } = req.params;
-    const query = 'SELECT * FROM Valves WHERE node_id = ?';
-    db.query(query, [node_id], (err, results) => {
-        if (err) {
-            return res.status(500).json({ message: 'Database error', error: err });
-        }
-        res.json(results);
-    });
+  const node_id = parseInt(req.params.node_id, 10);
+  if (isNaN(node_id)) {
+      return res.status(400).json({ message: 'Invalid node_id' });
+  }
+
+  const query = 'SELECT * FROM Valves WHERE node_id = ?';
+  db.query(query, [node_id], (err, results) => {
+      if (err) {
+          console.error('Database error:', err);
+          return res.status(500).json({ message: 'Database error', error: err });
+      }
+
+      console.log(`Fetched Valves for node_id ${node_id}:`, results); // ✅ Console log the fetched data
+
+      if (results.length === 0) {
+          return res.status(404).json({ message: 'No valves found for this node_id' });
+      }
+
+      res.json(results);
+  });
 });
+
 
 // Fetch flow meter data for a node
 app.get('/nodes/:node_id/flowmeters', (req, res) => {

@@ -11,7 +11,7 @@ export default function Layout() {
       {/* Define screens here */}
       <Stack.Screen name="Landing" options={{ title: "Landing" }} />
       <Stack.Screen name="Register" options={{ title: "Register" }} />
-      <Stack.Screen name="screen1" options={{ title: "screen1" }} />
+      <Stack.Screen name="Quadra_nodes" options={{ title: "Quadra_nodes" }} />
     </Stack>
   );
 }

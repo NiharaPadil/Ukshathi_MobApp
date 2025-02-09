@@ -1,3 +1,68 @@
+//for now dynamically working just from this creen:
+
+//licode:
+import { View, Text, Pressable, Image, ActivityIndicator } from 'react-native';
+import { useRouter } from 'expo-router';
+import React, { useState, useEffect } from 'react';
+
+export default function Screen1() {
+  const router = useRouter();
+  const [nodes, setNodes] = useState([]); // State to store fetched nodes
+  const [loading, setLoading] = useState(true); // Loading state
+
+  useEffect(() => {
+    const fetchNodes = async () => {
+      try {
+        const response = await fetch('http://192.168.1.45:5000/nodes'); // Use your local IP instead of "localhost"
+        const data = await response.json();
+        setNodes(data); // Store fetched data in state
+      } catch (error) {
+        console.error('Error fetching nodes:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchNodes();
+  }, []);
+
+  return (
+    <View style={{ flex: 1, alignItems: 'center', backgroundColor: '#f0f0f0' }}>
+      {/* HEADER */}
+      <View style={{ width: '100%', backgroundColor: 'white', paddingVertical: 20, alignItems: 'center', elevation: 4 }}>
+        <Text style={{ fontSize: 22, fontWeight: 'bold' }}>Nodes</Text>
+      </View>
+
+      {/* USER INFO */}
+      <View style={{ width: '100%', marginTop: 20, paddingHorizontal: 20, flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center' }}>
+        <Text style={{ fontSize: 18, marginRight: 10 }}>Hello User</Text>
+        <Image source={require('../assets/images/Uno.jpg')} style={{ width: 24, height: 24 }} />
+      </View>
+
+      {/* NODE LIST */}
+      <View style={{ marginTop: 100 }}>
+        {loading ? (
+          <ActivityIndicator size="large" color="#03A9F4" />
+        ) : (
+          nodes.map((node: { node_id: number; name: string }) => (
+            <Pressable
+              key={node.node_id} // ✅ Use the correct unique key
+              style={{ backgroundColor: '#03A9F4', padding: 15, marginVertical: 8, borderRadius: 8, width: 200, alignItems: 'center' }}
+              onPress={() => router.push(`./quadra_screens/screen2?id=${node.node_id}`)}
+            >
+              <Text style={{ color: '#fff', fontSize: 18 }}>{node.name}</Text>
+            </Pressable>
+          ))
+        )}
+      </View>
+    </View>
+  );
+}
+
+
+
+
+
 // import { View, Text, Pressable, Image, ActivityIndicator } from 'react-native';
 // import { useRouter, useNavigation } from 'expo-router';
 // import React, { useEffect, useState } from 'react';
@@ -186,61 +251,62 @@
 
 
 
-//limas code:
-import { View, Text, Pressable, Image, ActivityIndicator } from 'react-native';
-import { useRouter } from 'expo-router';
-import React, { useState, useEffect } from 'react';
 
-export default function Screen1() {
-  const router = useRouter();
-  const [nodes, setNodes] = useState([]); // State to store fetched nodes
-  const [loading, setLoading] = useState(true); // Loading state
 
-  useEffect(() => {
-    const fetchNodes = async () => {
-      try {
-        const response = await fetch('http://192.168.131.23:5000/nodes'); // Use your local IP instead of "localhost"
-        const data = await response.json();
-        setNodes(data); // Store fetched data in state
-      } catch (error) {
-        console.error('Error fetching nodes:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+//lima one more:
+// import { View, Text, Pressable, Image, ActivityIndicator, Alert } from 'react-native';
+// import { useRouter } from 'expo-router';
+// import React, { useState, useEffect } from 'react';
 
-    fetchNodes();
-  }, []);
+// export default function Screen1() {
+//   const router = useRouter();
+//   const [nodes, setNodes] = useState([]); // State to store fetched nodes
+//   const [loading, setLoading] = useState(true); // Loading state
+//   const [error, setError] = useState(null); // Error state
 
-  return (
-    <View style={{ flex: 1, alignItems: 'center', backgroundColor: '#f0f0f0' }}>
-      {/* HEADER */}
-      <View style={{ width: '100%', backgroundColor: 'white', paddingVertical: 20, alignItems: 'center', elevation: 4 }}>
-        <Text style={{ fontSize: 22, fontWeight: 'bold' }}>Nodes</Text>
-      </View>
+//   useEffect(() => {
+//     const fetchNodes = async () => {
+//       try {
+//         const response = await fetch('http://192.168.131.23:5000/nodes');
+//         if (!response.ok) {
+//           throw new Error(`HTTP error! Status: ${response.status}`);
+//         }
+//         const data = await response.json();
+//         setNodes(data);
+//       } catch (err) {
+//         setError(err.message);
+//         Alert.alert('Error', 'Failed to load nodes. Please try again.');
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
 
-      {/* USER INFO */}
-      <View style={{ width: '100%', marginTop: 20, paddingHorizontal: 20, flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center' }}>
-        <Text style={{ fontSize: 18, marginRight: 10 }}>Hello User</Text>
-        <Image source={require('../assets/images/Uno.jpg')} style={{ width: 24, height: 24 }} />
-      </View>
+//     fetchNodes();
+//   }, []);
 
-      {/* NODE LIST */}
-      <View style={{ marginTop: 100 }}>
-        {loading ? (
-          <ActivityIndicator size="large" color="#03A9F4" />
-        ) : (
-          nodes.map((node: { id: number; name: string }) => (
-            <Pressable
-              key={node.id}
-              style={{ backgroundColor: '#03A9F4', padding: 15, marginVertical: 8, borderRadius: 8, width: 200, alignItems: 'center' }}
-              onPress={() => router.push(`./quadra_screens/screen2?id=${node.id}`)}
-            >
-              <Text style={{ color: '#fff', fontSize: 18 }}>{node.name}</Text>
-            </Pressable>
-          ))
-        )}
-      </View>
-    </View>
-  );
-}
+//   return (
+//     <View style={{ flex: 1, alignItems: 'center', backgroundColor: '#f0f0f0' }}>
+//       {/* HEADER */}
+//       <View style={{ width: '100%', backgroundColor: 'white', paddingVertical: 20, alignItems: 'center', elevation: 4 }}>
+//         <Text style={{ fontSize: 22, fontWeight: 'bold' }}>Nodes</Text>
+//       </View>
+
+//       {/* USER INFO */}
+//       <View style={{ width: '100%', marginTop: 20, paddingHorizontal: 20, flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center' }}>
+//         <Text style={{ fontSize: 18, marginRight: 10 }}>Hello User</Text>
+//         <Image source={require('../assets/images/Uno.jpg')} style={{ width: 24, height: 24 }} />
+//       </View>
+
+//       {/* NODE LIST */}
+//       <View style={{ marginTop: 100 }}>
+//         {loading ? (
+//           <ActivityIndicator size="large" color="#03A9F4" />
+//         ) : error ? (
+//           <Text style={{ color: 'red', fontSize: 16 }}>Error loading nodes.</Text>
+//         ) : nodes.length === 0 ? (
+//           <Text style={{ fontSize: 16, color: '#777' }}>No nodes available.</Text>
+//         ) : (
+//           nodes.map((node: { id: number; name: string }) => (
+//             <Pressable
+//               key={node.id}
+//               s
