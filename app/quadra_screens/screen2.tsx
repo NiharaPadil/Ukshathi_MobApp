@@ -1,16 +1,34 @@
-//only id is manual for now rest is fetching from db.
+//ui updation needed refre from down below commneted code
+
+
 
 
 import { View, Text, Pressable, ActivityIndicator } from 'react-native';
 import React, { useEffect, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function Screen2() {
-  const nodeId = 4; // Manually setting nodeId for now
+  const [nodeId, setNodeId] = useState<string | null>(null);
   const [valves, setValves] = useState<{ valve_id: number; node_id: number; valve_name: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Fetch node_id from AsyncStorage when screen is focused
+  useFocusEffect(
+    React.useCallback(() => {
+      const getNodeId = async () => {
+        const storedNodeId = await AsyncStorage.getItem('selectedNodeId');
+        console.log('Retrieved Node ID:', storedNodeId);
+        setNodeId(storedNodeId);
+      };
+      getNodeId();
+    }, [])
+  );
+
+  // Fetch valves data based on nodeId
   useEffect(() => {
+    if (!nodeId) return; // Wait for nodeId before making API call
     const fetchValves = async () => {
       try {
         const response = await fetch(`http://192.168.1.45:5000/nodes/${nodeId}/valves`);
@@ -34,10 +52,12 @@ export default function Screen2() {
     <View style={{ flex: 1, backgroundColor: '#f0f0f0' }}>
       {/* HEADER SECTION */}
       <View style={{ width: '100%', backgroundColor: 'white', paddingVertical: 10, alignItems: 'center', elevation: 4 }}>
-        <Text style={{ fontSize: 22, fontWeight: 'bold' }}>Valves for Node {nodeId}</Text>
+        <Text style={{ fontSize: 22, fontWeight: 'bold' }}>Valves for Node {nodeId || '...'}</Text>
       </View>
 
-      {loading ? (
+      {!nodeId ? (
+        <ActivityIndicator size="large" color="#03A9F4" style={{ marginTop: 20 }} />
+      ) : loading ? (
         <ActivityIndicator size="large" color="#03A9F4" style={{ marginTop: 20 }} />
       ) : error ? (
         <Text style={{ color: 'red', marginTop: 20 }}>{error}</Text>
@@ -80,8 +100,9 @@ export default function Screen2() {
 
 
 
-// //harcode for now
 
+// //harcode for now
+//needed to refer ui....
 
 // import { View, Text, Pressable } from 'react-native';
 // import { useLocalSearchParams } from 'expo-router';

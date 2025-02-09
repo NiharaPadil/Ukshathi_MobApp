@@ -1,9 +1,10 @@
-//for now dynamically working just from this creen:
+//for now dynamically working just from this screen:
 
 //licode:
 import { View, Text, Pressable, Image, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import React, { useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Screen1() {
   const router = useRouter();
@@ -26,6 +27,16 @@ export default function Screen1() {
     fetchNodes();
   }, []);
 
+  const handleNodePress = async (node_id: number) => {
+    try {
+      await AsyncStorage.setItem('selectedNodeId', node_id.toString()); // Store node_id in AsyncStorage
+      console.log(`Stored node_id: ${node_id}`);
+      router.push(`./quadra_screens/screen2?id=${node_id}`);
+    } catch (error) {
+      console.error('Error saving node_id to AsyncStorage:', error);
+    }
+  };
+
   return (
     <View style={{ flex: 1, alignItems: 'center', backgroundColor: '#f0f0f0' }}>
       {/* HEADER */}
@@ -46,9 +57,9 @@ export default function Screen1() {
         ) : (
           nodes.map((node: { node_id: number; name: string }) => (
             <Pressable
-              key={node.node_id} // ✅ Use the correct unique key
+              key={node.node_id}
               style={{ backgroundColor: '#03A9F4', padding: 15, marginVertical: 8, borderRadius: 8, width: 200, alignItems: 'center' }}
-              onPress={() => router.push(`./quadra_screens/screen2?id=${node.node_id}`)}
+              onPress={() => handleNodePress(node.node_id)} // Call function to store node_id
             >
               <Text style={{ color: '#fff', fontSize: 18 }}>{node.name}</Text>
             </Pressable>
