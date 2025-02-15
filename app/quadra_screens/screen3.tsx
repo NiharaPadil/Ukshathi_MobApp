@@ -8,6 +8,10 @@ import { useRouter, useLocalSearchParams,useNavigation } from 'expo-router';
 import { Picker } from '@react-native-picker/picker'; // Import Picker for duration selection
 import React, { useState } from 'react';
 
+import Constants from 'expo-constants';
+
+const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL ?? '';
+
 export default function Screen3() {
   const router = useRouter();
   const { valveName, nodeId } = useLocalSearchParams(); // Retrieve parameters passed from the previous screen
@@ -224,7 +228,7 @@ export default function Screen3() {
       {/* Back Button */}
       <Pressable
         style={{
-          backgroundColor: '#03A9F4',
+          backgroundColor: '#337a2c',
           padding: 15,
           marginTop: 30,
           borderRadius: 8,
