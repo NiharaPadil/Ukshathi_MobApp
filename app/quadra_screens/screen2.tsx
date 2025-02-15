@@ -7,6 +7,7 @@ import { View, Text, Pressable, ActivityIndicator } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
+import { router } from 'expo-router';
 
 export default function Screen2() {
   const [nodeId, setNodeId] = useState<string | null>(null);
@@ -31,7 +32,7 @@ export default function Screen2() {
     if (!nodeId) return; // Wait for nodeId before making API call
     const fetchValves = async () => {
       try {
-        const response = await fetch(`http://192.168.1.45:5000/nodes/${nodeId}/valves`);
+        const response = await fetch(`http://192.168.1.43:5000/nodes/${nodeId}/valves`);
         if (!response.ok) {
           throw new Error('Failed to fetch valves');
         }
@@ -69,11 +70,13 @@ export default function Screen2() {
             {valves.length > 0 ? (
               valves.map((valve, index) => (
                 <Pressable
-                  key={index}
-                  style={{ backgroundColor: '#03A9F4', padding: 15, marginVertical: 8, borderRadius: 8 }}
-                >
-                  <Text style={{ color: '#fff', fontSize: 16 }}>{valve.valve_name}</Text>
-                </Pressable>
+                key={index}
+                style={{ backgroundColor: '#03A9F4', padding: 15, marginVertical: 8, borderRadius: 8 }}
+                onPress={() => router.push(`/quadra_screens/screen3`)} // ✅ Move it here
+              >
+                <Text style={{ color: '#fff', fontSize: 16 }}>{valve.valve_name}</Text>
+              </Pressable>
+              
               ))
             ) : (
               <Text>No valves available for this node.</Text>

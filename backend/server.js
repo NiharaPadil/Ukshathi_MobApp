@@ -213,31 +213,62 @@ app.get('/nodes/:node_id/valves', (req, res) => {
       res.json(results);
   });
 });
+//storig scheduling
+app.post('/save-schedule', (req, res) => {
+  const { node_id, valve_name, duration } = req.body;
 
+  const query = `INSERT INTO history (node_id, valve_name, duration) VALUES (?, ?, ?)`;
+  db.query(query, [node_id, valve_name, duration], (err, result) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Error saving data');
+    }
+    res.send({ message: 'Schedule saved', id: result.insertId });
+  });
+});
+
+// Fetch Latest Watering Schedule
+app.get('/get-schedule', (req, res) => {
+  const { node_id, valve_name } = req.query;
+
+  const query = `SELECT duration, timestamp FROM history WHERE node_id = ? AND valve_name = ? ORDER BY timestamp DESC LIMIT 1`;
+  db.query(query, [node_id, valve_name], (err, results) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Error fetching data');
+    }
+    res.json(results[0]); // Return latest schedule
+  });
+});
+
+
+//{
+//not yet implemneted: 
 
 // Fetch flow meter data for a node
-app.get('/nodes/:node_id/flowmeters', (req, res) => {
-    const { node_id } = req.params;
-    const query = 'SELECT * FROM FlowMeters WHERE node_id = ? ORDER BY timestamp DESC';
-    db.query(query, [node_id], (err, results) => {
-        if (err) {
-            return res.status(500).json({ message: 'Database error', error: err });
-        }
-        res.json(results);
-    });
-});
+// app.get('/nodes/:node_id/flowmeters', (req, res) => {
+//     const { node_id } = req.params;
+//     const query = 'SELECT * FROM FlowMeters WHERE node_id = ? ORDER BY timestamp DESC';
+//     db.query(query, [node_id], (err, results) => {
+//         if (err) {
+//             return res.status(500).json({ message: 'Database error', error: err });
+//         }
+//         res.json(results);
+//     });
+// });
 
 // Fetch battery voltage data for a node
-app.get('/nodes/:node_id/battery', (req, res) => {
-    const { node_id } = req.params;
-    const query = 'SELECT * FROM BatteryVoltage WHERE node_id = ? ORDER BY timestamp DESC';
-    db.query(query, [node_id], (err, results) => {
-        if (err) {
-            return res.status(500).json({ message: 'Database error', error: err });
-        }
-        res.json(results);
-    });
-});
+// app.get('/nodes/:node_id/battery', (req, res) => {
+//     const { node_id } = req.params;
+//     const query = 'SELECT * FROM BatteryVoltage WHERE node_id = ? ORDER BY timestamp DESC';
+//     db.query(query, [node_id], (err, results) => {
+//         if (err) {
+//             return res.status(500).json({ message: 'Database error', error: err });
+//         }
+//         res.json(results);
+//     });
+// });
+//}
 
 // Start Server
   const PORT = process.env.PORT || 5000;

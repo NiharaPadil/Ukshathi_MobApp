@@ -14,7 +14,7 @@ export default function Screen1() {
   useEffect(() => {
     const fetchNodes = async () => {
       try {
-        const response = await fetch('http://192.168.1.45:5000/nodes'); // Use your local IP instead of "localhost"
+        const response = await fetch('http://192.168.1.43:5000/nodes'); // Use your local IP instead of "localhost"
         const data = await response.json();
         setNodes(data); // Store fetched data in state
       } catch (error) {
