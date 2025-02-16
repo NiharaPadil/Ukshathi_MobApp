@@ -5,20 +5,26 @@ import Constants from 'expo-constants';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 
+
 export default function LandingScreen() {
   const router = useRouter();
   const [hovered, setHovered] = useState<string | null>(null);
   const [userProducts, setUserProducts] = useState<string[]>([]);
   const [userId, setUserId] = useState<string | null>(null); 
   const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL ?? '';
+  const [name, setName] = useState<string | null>(null);
 
-//dynamically usage of user_id
+
+//Fetch user data nd store user ID in state
   useEffect(() => {
     const fetchUserData = async () => {
       try {
 
         // retreiving user_id from storage 
         const storedUserId = await AsyncStorage.getItem('user_id');
+        const name = await AsyncStorage.getItem('name');
+        setName(name);
+        console.log("Name:", name); //debugg
         if (!storedUserId) {
           console.error("No user_id found in storage"); //debugg
           Alert.alert("Error", "User ID not found. Please login again.");
@@ -31,6 +37,7 @@ export default function LandingScreen() {
 
         // Fetch user-specific products using user_id
         const response = await fetch(`${API_BASE_URL}/user-products/${storedUserId}`);
+
         const data = await response.json();
 
         console.log("User products:", data);
@@ -43,6 +50,17 @@ export default function LandingScreen() {
 
     fetchUserData();
   }, [])
+
+
+    // Logout Functionality
+    const handleLogout = async () => {
+      try {
+        await AsyncStorage.clear(); // Clears all stored data
+        router.push('/'); // Redirects to login screen
+      } catch (error) {
+        console.error("Error during logout:", error);
+      }
+    };
 
   
 
@@ -67,12 +85,26 @@ export default function LandingScreen() {
   ];
   return (
 
+    <View style={styles.container}>
+      <View style={styles.titcontainer}>
+      <Text style={styles.title}>Welcome {name} </Text>
+
+      <Pressable style={styles.logoutButton} onPress={handleLogout}>
+        <Text style={styles.logoutText}>Logout</Text>
+      </Pressable>
+      </View >
+      
+
     
     <ScrollView contentContainerStyle={styles.scrollContainer}>
 
       {/* enabling and disabling opeartion of products */}
 
-      <View style={styles.container}>
+      <View style={styles.box}>
+
+      
+          
+          {/* Displaying products */}
         {items.map((item) => {
 
           {/*checking wheter includes any itemms*/}
@@ -107,12 +139,26 @@ export default function LandingScreen() {
         })}
       </View>
     </ScrollView>
+    </View>
   );
 }
 
 //Styling
 
 const styles = StyleSheet.create({
+  titcontainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    width: "100%",
+    paddingHorizontal: 20,
+    marginBottom: 20,
+  },
+  box: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
+  },
 scrollContainer: {
   flexGrow: 1,
   justifyContent: "center",
@@ -122,6 +168,7 @@ container: {
   alignItems: "center",
   paddingVertical: 20,
   backgroundColor: "#F5F5F5",
+  
 },
 item: {
   padding: 20,
@@ -198,6 +245,19 @@ imageContainer: {
   pressed: {
     backgroundColor: "#5E9473",
   },
+logoutButton: {
+  marginBottom: 20,
+  padding: 10,
+  backgroundColor: "#D9534F",
+  borderRadius: 5,
+  alignItems: "center",
+  width: 120,
+},
+logoutText: {
+  color: "#FFF",
+  fontSize: 16,
+  fontWeight: "bold",
+},
 
 });
 

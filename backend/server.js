@@ -139,7 +139,7 @@ db.getConnection((err, connection) => {
             message: 'Login successful',
             user_id: user.user_id  // to return user_idd
           });
-          return res.json({ message: 'Login successful', user_id: user.user_id });
+          return res.json({ message: 'Login successful', user_id: user.user_id , name: user.name});
 
         } else {
           return res.status(400).json({ message: 'Invalid password' });
