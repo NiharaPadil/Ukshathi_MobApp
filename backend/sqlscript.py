@@ -187,93 +187,106 @@ def forgot_password(cnx):
         cursor.close()
         print("Password Changed")
 
-# Function to add device details for a user
+# Function to add device details for a usee
+
+#madenew chnages for repating adding of values(li):
 def add_device_to_user(cnx, user_id):
     cursor = cnx.cursor()
-    device_type = input("Enter device type (uno, quadra, hexa, octa): ")
+    device_map = {'1': 'uno', '2': 'quadra', '3': 'hexa', '4': 'octa'}
+    
+    while True:
+        device_type_num = input("Enter device type (1: uno, 2: quadra, 3: hexa, 4: octa): ")
+        device_type = device_map.get(device_type_num)
+        
+        if not device_type:
+            print("Invalid device type")
+            continue
+        
 
-    if device_type not in ['uno', 'quadra', 'hexa', 'octa']:
-        print("Invalid device type")
-        return
+        if device_type == 'quadra':
+            num_controllers = int(input("Enter number of controllers: "))
+            
 
-    if device_type == 'quadra':
-        num_controllers = int(input("Enter number of controllers: "))
-        num_nodes = int(input("Enter number of nodes: "))
+            for controller_index in range(1, num_controllers + 1):
+                print(f"Currently entering values for Controller {controller_index}")
+                
+                controller_name = input("Enter controller name: ")
+                controller_id = generate_next_id(cnx, 'controller', 'C')
 
-        for _ in range(num_controllers):
+                add_controller = ("INSERT INTO controller (controllerID, controllerName, userID, deviceType) VALUES (%s, %s, %s,%s)")
+                cursor.execute(add_controller, (controller_id, controller_name, user_id, device_type))
+
+                num_nodes = int(input(f"Enter number of nodes for Controller {controller_index}: "))
+
+                for _ in range(num_nodes):
+                    node_name = input("Enter node name: ")
+                    zone_name = input("Enter Zone name: ")
+                    battery_voltage = input("Enter battery voltage: ")
+                    node_id = generate_next_id(cnx, 'node', 'N')
+
+                    add_node = ("INSERT INTO node (nodeID, nodeName, batteryVoltage, controllerID) VALUES (%s, %s, %s, %s)")
+                    cursor.execute(add_node, (node_id, node_name, battery_voltage, controller_id))
+
+                    num_valves = int(input("Enter number of valves: "))
+                    for i in range(num_valves):
+                        valve_name = input(f"Enter valve name for valve {i+1}: ")
+                        valve_id = generate_next_id(cnx, 'valve', 'V')
+
+                        add_valve = ("INSERT INTO valve (valveID, valveName, controllerID, nodeID) VALUES (%s, %s, %s, %s)")
+                        cursor.execute(add_valve, (valve_id, valve_name, controller_id, node_id))
+                        insert_fetch(cnx, user_id, controller_id, node_id, valve_id, controller_name, node_name, valve_name, zone_name)
+        
+        elif device_type == 'octa':
             controller_name = input("Enter controller name: ")
+            node_name = input("Enter node name: ")
+            zone_name= input(f"Enter Zone name: ")
+            battery_voltage = input("Enter battery voltage: ")
             controller_id = generate_next_id(cnx, 'controller', 'C')
 
-            add_controller = ("INSERT INTO controller (controllerID, controllerName, userID) VALUES (%s, %s, %s)")
-            cursor.execute(add_controller, (controller_id, controller_name, user_id))
+            add_controller = ("INSERT INTO controller (controllerID, controllerName, userID , deviceType) VALUES (%s, %s, %s,%s)")
+            cursor.execute(add_controller, (controller_id, controller_name, user_id,device_type))
 
-            for _ in range(num_nodes):
-                node_name = input("Enter node name: ")
-                zone_name= input(f"Enter Zone name: ")
-                battery_voltage = input("Enter battery voltage: ")
-                node_id = generate_next_id(cnx, 'node', 'N')
+            node_id = generate_next_id(cnx, 'node', 'N')
+            add_node = ("INSERT INTO node (nodeID, nodeName, batteryVoltage, controllerID) VALUES (%s, %s, %s, %s)")
+            cursor.execute(add_node, (node_id, node_name, battery_voltage, controller_id))
 
-                add_node = ("INSERT INTO node (nodeID, nodeName, batteryVoltage, controllerID) VALUES (%s, %s, %s, %s)")
-                cursor.execute(add_node, (node_id, node_name, battery_voltage, controller_id))
+            num_valves = int(input("Enter number of valves (up to 8): "))
+            if num_valves > 8:
+                num_valves = 8
+            for i in range(num_valves):
+                valve_name = input(f"Enter valve name for valve {i+1}: ")
+                valve_id = generate_next_id(cnx, 'valve', 'V')
                 
-                num_valves = int(input("Enter number of valves: "))
-                for i in range(num_valves):
-                    valve_name = input(f"Enter valve name for valve {i+1}: ")
-                    valve_id = generate_next_id(cnx, 'valve', 'V')
+                add_valve = ("INSERT INTO valve (valveID, valveName, controllerID, nodeID) VALUES (%s, %s, %s, %s)")
+                cursor.execute(add_valve, (valve_id, valve_name, controller_id, node_id))
+                insert_fetch(cnx, user_id, controller_id, node_id, valve_id, controller_name, node_name, valve_name, zone_name)
+        
+        elif device_type in ['uno', 'hexa']:
+            controller_name = input("Enter controller name: ")
+            node_name = input("Enter node name: ")
+            zone_name= input(f"Enter Zone name: ")
+            battery_voltage = input("Enter battery voltage: ")
+            controller_id = generate_next_id(cnx, 'controller', 'C')
 
-                    add_valve = ("INSERT INTO valve (valveID, valveName, controllerID, nodeID) VALUES (%s, %s, %s, %s)")
-                    cursor.execute(add_valve, (valve_id, valve_name, controller_id, node_id))
-                    insert_fetch(cnx, user_id, controller_id, node_id, valve_id, controller_name, node_name, valve_name, zone_name)
-    
-    elif device_type == 'octa':
-        controller_name = input("Enter controller name: ")
-        node_name = input("Enter node name: ")
-        zone_name= input(f"Enter Zone name: ")
-        battery_voltage = input("Enter battery voltage: ")
-        controller_id = generate_next_id(cnx, 'controller', 'C')
+            add_controller = ("INSERT INTO controller (controllerID, controllerName, userID,deviceType) VALUES (%s, %s, %s,%s)")
+            cursor.execute(add_controller, (controller_id, controller_name, user_id,device_type))
 
-        add_controller = ("INSERT INTO controller (controllerID, controllerName, userID) VALUES (%s, %s, %s)")
-        cursor.execute(add_controller, (controller_id, controller_name, user_id))
+            node_id = generate_next_id(cnx, 'node', 'N')
+            add_node = ("INSERT INTO node (nodeID, nodeName, batteryVoltage, controllerID) VALUES (%s, %s, %s, %s)")
+            cursor.execute(add_node, (node_id, node_name, battery_voltage, controller_id))
 
-        node_id = generate_next_id(cnx, 'node', 'N')
-        add_node = ("INSERT INTO node (nodeID, nodeName, batteryVoltage, controllerID) VALUES (%s, %s, %s, %s)")
-        cursor.execute(add_node, (node_id, node_name, battery_voltage, controller_id))
-
-        num_valves = int(input("Enter number of valves (up to 8): "))
-        if num_valves > 8:
-            num_valves = 8
-        for i in range(num_valves):
-            valve_name = input(f"Enter valve name for valve {i+1}: ")
+            valve_name = input(f"Enter valve name for valve  ")
             valve_id = generate_next_id(cnx, 'valve', 'V')
-            
+
             add_valve = ("INSERT INTO valve (valveID, valveName, controllerID, nodeID) VALUES (%s, %s, %s, %s)")
             cursor.execute(add_valve, (valve_id, valve_name, controller_id, node_id))
             insert_fetch(cnx, user_id, controller_id, node_id, valve_id, controller_name, node_name, valve_name, zone_name)
+        more_devices = input("Do you want to add another device? (yes/no): ").strip().lower()
+        if more_devices != 'yes':
+            break
     
-    elif device_type in ['uno', 'hexa']:
-        controller_name = input("Enter controller name: ")
-        node_name = input("Enter node name: ")
-        zone_name= input(f"Enter Zone name: ")
-        battery_voltage = input("Enter battery voltage: ")
-        controller_id = generate_next_id(cnx, 'controller', 'C')
-
-        add_controller = ("INSERT INTO controller (controllerID, controllerName, userID) VALUES (%s, %s, %s)")
-        cursor.execute(add_controller, (controller_id, controller_name, user_id))
-
-        node_id = generate_next_id(cnx, 'node', 'N')
-        add_node = ("INSERT INTO node (nodeID, nodeName, batteryVoltage, controllerID) VALUES (%s, %s, %s, %s)")
-        cursor.execute(add_node, (node_id, node_name, battery_voltage, controller_id))
-
-        valve_name = input("Enter valve name: ")
-        valve_id = (cnx, 'valve', 'V')
-
-        add_valve = ("INSERT INTO valve (valveID, valveName, controllerID, nodeID) VALUES (%s, %s, %s, %s)")
-        cursor.execute(add_valve, (valve_id, valve_name, controller_id, node_id))
-        insert_fetch(cnx, user_id, controller_id, node_id, valve_id, controller_name, node_name, valve_name, zone_name)
-
     cnx.commit()
     cursor.close()
-
 
 # Function to fetch and print user data
 def fetch_user_data(cnx, user_id):
