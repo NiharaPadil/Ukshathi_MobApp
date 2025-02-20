@@ -11,10 +11,12 @@ const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL ?? '';
 
 export default function Screen1() {
   type NodeType = {
-        nodeID: string | number;
-        nodeName: string;
-        batteryVoltage: number;
-      };
+    nodeID: string | number;
+    nodeName: string;
+    batteryVoltage: number;
+    controllerID: string;
+  };
+  
   const router = useRouter();
   const [nodes, setNodes] = useState<NodeType[]>([]); // State to store fetched nodes
   const [loading, setLoading] = useState(true); // Loading state
@@ -71,38 +73,50 @@ export default function Screen1() {
     }
   };
 
-  return (
-    <View style={styles.container}>
-      {/* HEADER */}
-      <View style={styles.header}>
-        <Text style={styles.headerText}>Nodes</Text>
-      </View>
+    // 🔹 Group nodes by controllerID
+    const groupedNodes: Record<string, NodeType[]> = nodes.reduce((acc, node) => {
+      if (!acc[node.controllerID]) acc[node.controllerID] = [];
+      acc[node.controllerID].push(node);
+      return acc;
+    }, {} as Record<string, NodeType[]>);
 
-      {/* USER INFO */}
-      <View style={styles.userInfo}>
-        <Text style={styles.userText}>Hello User</Text>
-        <Image source={require('../assets/images/Uno.jpg')} style={styles.userImage} />
+    return (
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.headerText}>Nodes</Text>
+        </View>
+  
+        <View style={styles.userInfo}>
+          <Text style={styles.userText}>Hello User</Text>
+          <Image source={require('../assets/images/Uno.jpg')} style={styles.userImage} />
+        </View>
+  
+        <View style={styles.nodeList}>
+          {loading ? (
+            <ActivityIndicator size="large" color="#03A9F4" />
+          ) : (
+            Object.keys(groupedNodes).map((controllerID) => ( 
+              <View key={controllerID}>
+                {/* Show Controller ID as Section Header */}
+                <Text style={styles.controllerHeader}>Controller {controllerID}</Text>
+                
+                {/* Display Nodes Under Each Controller */}
+                {groupedNodes[controllerID].map((node) => (
+                  <Pressable
+                    key={node.nodeID}
+                    style={styles.nodeButton}
+                    onPress={() => handleNodePress(node.nodeID)}
+                  >
+                    <Text style={styles.nodeText}>{node.nodeName}</Text>
+                  </Pressable>
+                ))}
+              </View>
+            ))
+          )}
+        </View>
       </View>
-
-      {/* NODE LIST */}
-      <View style={styles.nodeList}>
-        {loading ? (
-          <ActivityIndicator size="large" color="#03A9F4" />
-        ) : (
-          nodes.map((node) => (
-            <Pressable
-              key={node.nodeID}
-              style={styles.nodeButton}
-              onPress={() => handleNodePress(node.nodeID)}
-            >
-              <Text style={styles.nodeText}>{node.nodeName}</Text>
-            </Pressable>
-          ))
-        )}
-      </View>
-    </View>
-  );
-};
+    );
+  };
 
 const styles = StyleSheet.create({
   container: {
@@ -135,6 +149,7 @@ const styles = StyleSheet.create({
     width: 74,
     height: 74,
   },
+  controllerHeader: { fontSize: 20, fontWeight: 'bold', marginVertical: 10 }, 
   nodeList: {
     marginTop: 100,
   },

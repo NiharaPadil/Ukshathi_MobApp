@@ -201,17 +201,6 @@ app.get('/nodes', (req, res) => {
   });
 });
 
-// Fetch valves based on node ID
-// app.get('/nodes/:node_id/valves', (req, res) => {
-//     const { node_id } = req.params;
-//     const query = 'SELECT * FROM Valves WHERE node_id = ?';
-//     db.query(query, [node_id], (err, results) => {
-//         if (err) {
-//             return res.status(500).json({ message: 'Database error', error: err });
-//         }
-//         res.json(results);
-//     });
-// });
 
 //screen2-api of valves screen updated to maam ka db
 app.get('/nodes/:node_id/valves', (req, res) => {
@@ -235,7 +224,7 @@ app.get('/nodes/:node_id/valves', (req, res) => {
           return res.status(404).json({ message: 'No valves found for this node_id' });
       }
        console.log(results)
-       
+
       res.json(results);
   });
 });
