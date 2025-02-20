@@ -1,7 +1,3 @@
-//ui updation needed refre from down below commneted code
-
-
-
 
 import { View, Text, Pressable, ActivityIndicator, StyleSheet } from 'react-native';
 import React, { useEffect, useState } from 'react';

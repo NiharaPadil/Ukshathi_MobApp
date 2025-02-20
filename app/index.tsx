@@ -9,7 +9,7 @@ import Constants from 'expo-constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Index() {
-  const [username, setUsername] = useState('');
+  const [userEmail, setUserEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -21,10 +21,10 @@ export default function Index() {
     // Load stored user ID on mount (optional: if needed for auto-login later)
     const checkUserSession = async () => {
       try {
-        const storedUserId = await AsyncStorage.getItem('user_id');
+        const storedUserId = await AsyncStorage.getItem('userID');
         if (storedUserId) {
-          console.log('User ID found:', storedUserId);
-          router.replace('./Landing');
+          console.log('User ID found:', storedUserId); //debug point
+          router.replace('./Landing'); // Redirect to landing page if user is already logged in
         }
       } catch (error) {
         console.error('Error checking user session:', error);
@@ -35,7 +35,7 @@ export default function Index() {
   }, []);
 
   const handleLogin = async () => { 
-    if (!username || !password) {
+    if (!userEmail || !password) {
       setErrorMessage('Please enter both username and password.');
       return;
     }
@@ -44,29 +44,34 @@ export default function Index() {
     setErrorMessage('');
 
     try {
-      console.log('Attempting login with', { username, password });
+      console.log('Attempting login with', { userEmail, password }); //debug point
 
+
+     // Attempting login with email and password
       const response = await fetch(`${API_BASE_URL}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: username, password }),
+        body: JSON.stringify({ userEmail, passwordHash: password }),
       });
 
       const data = await response.json();
       
-      console.log('API Response:', data);
+      console.log('API Response:', data); //debug point
 
       if (response.ok) {
-        if (!data.user_id) {
+        if (!data.userID) {
           throw new Error('User ID missing in response');
         }
 
-        await AsyncStorage.setItem('user_id', data.user_id.toString());
-        await AsyncStorage.setItem('name', data.name); // Store user name for later use
-        console.log('User ID stored:', data.user_id);
-        console.log('User Name stored:', data.name); //debugg
+        await AsyncStorage.setItem('userID', data.userID.toString());
+        console.log('User ID stored:', data.userID);
 
-        Alert.alert('Login Successful', `Welcome, ${username}!`);
+        // Will see later , if i need names 
+         //await AsyncStorage.setItem('name', data.name); // Store user name for later use
+        //console.log('User Name stored:', data.name); //debugg
+      //Alert.alert('Login Successful', `Welcome, ${username}!`);
+
+      
         router.replace('./Landing');
       } else {
         throw new Error(data.message || 'Invalid credentials');
@@ -86,8 +91,8 @@ export default function Index() {
 
       <TextInput
         placeholder="Email"
-        value={username}
-        onChangeText={setUsername}
+        value={userEmail}
+        onChangeText={setUserEmail}
         style={styles.input}
         placeholderTextColor="#a9a9a9"
       />

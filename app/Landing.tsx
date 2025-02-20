@@ -1,6 +1,3 @@
-//dont remove any commnets
-
-
 import { useState, useEffect } from "react";
 import { View, Text, Pressable, StyleSheet, ScrollView, Image,Alert, Animated } from "react-native";
 import { useRouter } from "expo-router";
@@ -13,39 +10,35 @@ export default function LandingScreen() {
   const router = useRouter();
   const [hovered, setHovered] = useState<string | null>(null);
   const [userProducts, setUserProducts] = useState<string[]>([]);
-  //uncomment when dynammic fecth
-  // const [userId, setUserId] = useState<string | null>(null);  
+  const [userId, setUserId] = useState<string | null>(null);  
   const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL ?? '';
   const [name, setName] = useState<string | null>(null);
-
-  const userId = "8"; // comment during dynamic fecth
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
 
-//         // retreiving user_id from storage 
-//         const storedUserId = await AsyncStorage.getItem('user_id');
-//         const name = await AsyncStorage.getItem('name');
-//         setName(name);
-//         console.log("Name:", name); //debugg
-//         if (!storedUserId) {
-//           console.error("No user_id found in storage"); //debugg
-//           Alert.alert("Error", "User ID not found. Please login again.");
-//           return;
-//         }
+        // retreiving user_id from storage 
+        const storedUserId = await AsyncStorage.getItem('userID');
+
+        //if needed 
+        // const name = await AsyncStorage.getItem('name');
+        // setName(name);
+        // console.log("Name:", name); //debugg
+
+
+        if (!storedUserId) {
+          console.error("No user_id found in storage"); //debugg point
+          Alert.alert("Error", "User ID not found. Please login again.");
+          return;
+        }
         
-//         setUserId(storedUserId); // Store userId in state
+        setUserId(storedUserId); // Store userId in state
 
-//         console.log("Retrieved user_id:", storedUserId); //ebugg
+        console.log("Retrieved user_id:", storedUserId); //debugg point
 
-//         // Fetch user-specific products using user_id
-
-
-
-
-//if dynamic remove userid from yjy api url to storeduserid
-              const response = await fetch(`${API_BASE_URL}/controller/${userId}`);
+        // Fetch user products from API
+              const response = await fetch(`${API_BASE_URL}/controller/${storedUserId}`);
 
                const data = await response.json();
                console.log("User products:", data);
@@ -74,20 +67,20 @@ export default function LandingScreen() {
 
 
   const userPermissions = userProducts;
+  console.log("User permissions:", userPermissions); //debugg point
 
-  //the products items
-  //here { name-product name ,  desc- escriptoon of prouct , image -image of products , route- connecting to next pages}
+ // Product details
   const items = [
-    { name: "Uno", desc: "A single valve system for precise, Wifi/4G-enabled watering of up to 100 plants, all in a weatherproof IP65 design", 
+    { name: "uno", desc: "A single valve system for precise, Wifi/4G-enabled watering of up to 100 plants, all in a weatherproof IP65 design", 
       route: "/Quadra_nodes", 
       image: require("../assets/images/Uno.jpg") },
-    { name: "Quadra", desc: "QUADRA revolutionizes large-scale irrigation with solar-powered nodes managing up to 4 valves, compatible with various methods, and featuring LoRa® technology for precise wireless control via Wi-Fi or 4G in a durable IP65 design.", 
+    { name: "quadra", desc: "QUADRA revolutionizes large-scale irrigation with solar-powered nodes managing up to 4 valves, compatible with various methods, and featuring LoRa® technology for precise wireless control via Wi-Fi or 4G in a durable IP65 design.", 
       route: "/Quadra_nodes", 
       image: require("../assets/images/Quadra.jpg") },
-    { name: "Hexa", desc: "A sleek hexagonal tank with smart scheduling, designed for balconies without taps, integrates with RO units and AC compressors, and offers Wi-Fi/4G connectivity in an IP65 weatherproof build.", 
+    { name: "hexa", desc: "A sleek hexagonal tank with smart scheduling, designed for balconies without taps, integrates with RO units and AC compressors, and offers Wi-Fi/4G connectivity in an IP65 weatherproof build.", 
       route: "/Quadra_nodes", 
       image: require("../assets/images/Hexa.jpg") },
-    { name: "Octa", desc: "Manage up to 8 valves with precision scheduling, perfect for large outdoor spaces, and connect via Wi-Fi or 4G in a rugged, IP65 weatherproof design, ensuring your garden thrives effortlessly.",
+    { name: "octa", desc: "Manage up to 8 valves with precision scheduling, perfect for large outdoor spaces, and connect via Wi-Fi or 4G in a rugged, IP65 weatherproof design, ensuring your garden thrives effortlessly.",
       route: "/Quadra_nodes", 
        image: require("../assets/images/Octa.jpg") },
   ];
@@ -104,6 +97,7 @@ export default function LandingScreen() {
         <View style={styles.box}>
           {items.map((item) => {
              const isDisabled = !userPermissions.includes(item.name);
+             console.log("Item:", item.name, "Disabled:", isDisabled); //debugg
 
             return (
               <Pressable
@@ -133,7 +127,7 @@ export default function LandingScreen() {
   );
 }
 
-// Styling
+
 const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,

@@ -1,6 +1,3 @@
-
-//dont remove commentsssss
-
 import { View, Text, Pressable, Image, ActivityIndicator, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import React, { useState, useEffect } from 'react';
@@ -20,38 +17,29 @@ export default function Screen1() {
   const router = useRouter();
   const [nodes, setNodes] = useState<NodeType[]>([]); // State to store fetched nodes
   const [loading, setLoading] = useState(true); // Loading state
-  //uncomment durig dynamic fetch
-  // const [userID, setUserID] = useState<string | null>(null);  // Store userID
+  const [userID, setUserID] = useState<string | null>(null);  // Store userID
 
-  //comment dduring dynsmic fecth
-  const userID = "8";
+  // Fetch userID from AsyncStorage
 
-  //uncomment dduring ynamic fetch
+    useEffect(() => {
+    const fetchUserID = async () => {
+      try {
+        const storedUserID = await AsyncStorage.getItem('userID'); // Retrieve stored userID
+        if (storedUserID) {
+          setUserID(storedUserID);
+          fetchNodes(storedUserID);
+        }
+      } catch (error) {
+        console.error('Error fetching userID:', error);
+      }
+    };
 
-    // useEffect(() => {
-  //   const fetchUserID = async () => {
-  //     try {
-  //       const storedUserID = await AsyncStorage.getItem('userID'); // Retrieve stored userID
-  //       if (storedUserID) {
-  //         setUserID(storedUserID);
-  //         fetchNodes(storedUserID);
-  //       }
-  //     } catch (error) {
-  //       console.error('Error fetching userID:', error);
-  //     }
-  //   };
-
-  //   fetchUserID();
-  // }, []);
-
-  //coomnet when dynamic id u fetch
-  useEffect(() => {
-    fetchNodes(userID);
+    fetchUserID();
   }, []);
 
+  // Fetch nodes from API
   const fetchNodes = async (userID: string) => {
     try {
-      //use storeduserid during dynamic fetch
       const response = await fetch(`${API_BASE_URL}/nodes?userID=${userID}`);
       if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
       const data: NodeType[] = await response.json();
