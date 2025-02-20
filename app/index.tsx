@@ -23,8 +23,8 @@ export default function Index() {
       try {
         const storedUserId = await AsyncStorage.getItem('userID');
         if (storedUserId) {
-          console.log('User ID found:', storedUserId);
-          router.replace('./Landing');
+          console.log('User ID found:', storedUserId); //debug point
+          router.replace('./Landing'); // Redirect to landing page if user is already logged in
         }
       } catch (error) {
         console.error('Error checking user session:', error);
@@ -44,8 +44,10 @@ export default function Index() {
     setErrorMessage('');
 
     try {
-      console.log('Attempting login with', { userEmail, password });
+      console.log('Attempting login with', { userEmail, password }); //debug point
 
+
+     // Attempting login with email and password
       const response = await fetch(`${API_BASE_URL}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -54,7 +56,7 @@ export default function Index() {
 
       const data = await response.json();
       
-      console.log('API Response:', data);
+      console.log('API Response:', data); //debug point
 
       if (response.ok) {
         if (!data.userID) {
@@ -62,11 +64,14 @@ export default function Index() {
         }
 
         await AsyncStorage.setItem('userID', data.userID.toString());
-        //await AsyncStorage.setItem('name', data.name); // Store user name for later use
         console.log('User ID stored:', data.userID);
-        //console.log('User Name stored:', data.name); //debugg
 
-        //Alert.alert('Login Successful', `Welcome, ${username}!`);
+        // Will see later , if i need names 
+         //await AsyncStorage.setItem('name', data.name); // Store user name for later use
+        //console.log('User Name stored:', data.name); //debugg
+      //Alert.alert('Login Successful', `Welcome, ${username}!`);
+
+      
         router.replace('./Landing');
       } else {
         throw new Error(data.message || 'Invalid credentials');
@@ -241,5 +246,21 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+
+// import { View, Text, Button } from "react-native";
+// import { useRouter } from "expo-router";
+
+// export default function Index() {
+//   const router = useRouter();
+
+//   return (
+//     <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+//       <Text style={{ fontSize: 24, fontWeight: "bold" }}>Welcome to the App</Text>
+//       <Button title="Get Started" onPress={() => router.push("/Landing")} />
+//     </View>
+//   );
+// }
+
+
 
 

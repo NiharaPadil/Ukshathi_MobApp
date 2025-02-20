@@ -1,4 +1,3 @@
-
 import { View, Text, Pressable, Image, ActivityIndicator, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import React, { useState, useEffect } from 'react';
@@ -8,69 +7,104 @@ import Constants from 'expo-constants';
 const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL ?? '';
 
 export default function Screen1() {
+  type NodeType = {
+    nodeID: string | number;
+    nodeName: string;
+    batteryVoltage: number;
+    controllerID: string;
+  };
+  
   const router = useRouter();
-  const [nodes, setNodes] = useState<{ node_id: number; name: string }[]>([]); // State to store fetched nodes
+  const [nodes, setNodes] = useState<NodeType[]>([]); // State to store fetched nodes
   const [loading, setLoading] = useState(true); // Loading state
+  const [userID, setUserID] = useState<string | null>(null);  // Store userID
 
-  useEffect(() => {
-    const fetchNodes = async () => {
+  // Fetch userID from AsyncStorage
+
+    useEffect(() => {
+    const fetchUserID = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/nodes`);
-        if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
-        const data = await response.json();
-        setNodes(data);
+        const storedUserID = await AsyncStorage.getItem('userID'); // Retrieve stored userID
+        if (storedUserID) {
+          setUserID(storedUserID);
+          fetchNodes(storedUserID);
+        }
       } catch (error) {
-        console.error('Error fetching nodes:', error);
-      } finally {
-        setLoading(false);
+        console.error('Error fetching userID:', error);
       }
     };
 
-    fetchNodes();
+    fetchUserID();
   }, []);
 
-  const handleNodePress = async (node_id: number) => {
+  // Fetch nodes from API
+  const fetchNodes = async (userID: string) => {
     try {
-      await AsyncStorage.setItem('selectedNodeId', node_id.toString()); // Store node_id in AsyncStorage
-      console.log(`Stored node_id: ${node_id}`);
-      router.push(`./quadra_screens/screen2?id=${node_id}`);
+      const response = await fetch(`${API_BASE_URL}/nodes?userID=${userID}`);
+      if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+      const data: NodeType[] = await response.json();
+      setNodes(data);
     } catch (error) {
-      console.error('Error saving node_id to AsyncStorage:', error);
+      console.error('Error fetching nodes:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  return (
-    <View style={styles.container}>
-      {/* HEADER */}
-      <View style={styles.header}>
-        <Text style={styles.headerText}>Nodes</Text>
-      </View>
+  const handleNodePress = async (nodeID:string | number) => {
+    try {
+      await AsyncStorage.setItem('selectedNodeId', nodeID.toString());
+      console.log(`Stored nodeID: ${nodeID}`);
+      router.push(`./quadra_screens/screen2?id=${nodeID}`);
+    } catch (error) {
+      console.error('Error saving nodeID:', error);
+    }
+  };
 
-      {/* USER INFO */}
-      <View style={styles.userInfo}>
-        <Text style={styles.userText}>Hello User</Text>
-        <Image source={require('../assets/images/Uno.jpg')} style={styles.userImage} />
-      </View>
+    // 🔹 Group nodes by controllerID
+    const groupedNodes: Record<string, NodeType[]> = nodes.reduce((acc, node) => {
+      if (!acc[node.controllerID]) acc[node.controllerID] = [];
+      acc[node.controllerID].push(node);
+      return acc;
+    }, {} as Record<string, NodeType[]>);
 
-      {/* NODE LIST */}
-      <View style={styles.nodeList}>
-        {loading ? (
-          <ActivityIndicator size="large" color="#03A9F4" />
-        ) : (
-          nodes.map((node) => (
-            <Pressable
-              key={node.node_id}
-              style={styles.nodeButton}
-              onPress={() => handleNodePress(node.node_id)}
-            >
-              <Text style={styles.nodeText}>{node.name}</Text>
-            </Pressable>
-          ))
-        )}
+    return (
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.headerText}>Nodes</Text>
+        </View>
+  
+        <View style={styles.userInfo}>
+          <Text style={styles.userText}>Hello User</Text>
+          <Image source={require('../assets/images/Uno.jpg')} style={styles.userImage} />
+        </View>
+  
+        <View style={styles.nodeList}>
+          {loading ? (
+            <ActivityIndicator size="large" color="#03A9F4" />
+          ) : (
+            Object.keys(groupedNodes).map((controllerID) => ( 
+              <View key={controllerID}>
+                {/* Show Controller ID as Section Header */}
+                <Text style={styles.controllerHeader}>Controller {controllerID}</Text>
+                
+                {/* Display Nodes Under Each Controller */}
+                {groupedNodes[controllerID].map((node) => (
+                  <Pressable
+                    key={node.nodeID}
+                    style={styles.nodeButton}
+                    onPress={() => handleNodePress(node.nodeID)}
+                  >
+                    <Text style={styles.nodeText}>{node.nodeName}</Text>
+                  </Pressable>
+                ))}
+              </View>
+            ))
+          )}
+        </View>
       </View>
-    </View>
-  );
-};
+    );
+  };
 
 const styles = StyleSheet.create({
   container: {
@@ -103,6 +137,7 @@ const styles = StyleSheet.create({
     width: 74,
     height: 74,
   },
+  controllerHeader: { fontSize: 20, fontWeight: 'bold', marginVertical: 10 }, 
   nodeList: {
     marginTop: 100,
   },
@@ -119,5 +154,4 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
 });
-
 

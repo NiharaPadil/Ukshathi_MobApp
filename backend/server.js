@@ -247,67 +247,85 @@ app.post('/login', async (req, res) => {
 });
 
 
-//landing api 
-  app.get('/user-products/:id', (req, res) => {
-    const id = req.params.id;
-    const query = `
-        SELECT up.product_name 
-        FROM user_products up
-        WHERE up.user_id = ?;
-    `;
-    
-    db.query(query, [id], (err, results) => {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json(results.map(row => row.product_name));  
-    });
+//landing api -update to new db api
+app.get('/controller/:id', (req, res) => {
+  const id = req.params.id;
+  const query = `
+      SELECT c.deviceType
+      FROM controller c
+      WHERE c.userID = ?;
+  `;
+  
+  db.query(query, [id], (err, results) => {
+      if (err) return res.status(500).json({ error: err.message });
+
+      // Map the correct column 'deviceType'
+      res.json(results.map(row => row.deviceType));  
+      console.log(results);
   });
-
-
-  //aithi
-
-  app.get('/nodes', (req, res) => {
-    const query = 'SELECT * FROM Nodes';
-    db.query(query, (err, results) => {
-        if (err) {
-            return res.status(500).json({ message: 'Database error', error: err });
-        }
-        res.json(results);
-    });
 });
 
-// Fetch valves based on node ID
-// app.get('/nodes/:node_id/valves', (req, res) => {
-//     const { node_id } = req.params;
-//     const query = 'SELECT * FROM Valves WHERE node_id = ?';
-//     db.query(query, [node_id], (err, results) => {
-//         if (err) {
-//             return res.status(500).json({ message: 'Database error', error: err });
-//         }
-//         res.json(results);
-//     });
-// });
+
+
+
+//quadra_nodes screen api- changed to maam new db
+app.get('/nodes', (req, res) => {
+  const { userID } = req.query;
+  
+  if (!userID) {
+      return res.status(400).json({ message: 'userID is required' });
+  }
+
+  const query = `
+        SELECT N.*
+        FROM Node N
+        JOIN Controller C ON N.controllerID = C.controllerID
+        WHERE C.userID = ?;
+    `;
+
+  db.query(query, [userID], (err, results) => {
+      if (err) {
+          console.error('Database error:', err);  // Add detailed logging
+          return res.status(500).json({ message: 'Database error', error: err });
+      }
+      
+      if (results.length === 0) {
+          return res.status(404).json({ message: 'No nodes found for this userID' });
+      }
+
+      console.log('Query results:', results);
+      res.json(results);
+  });
+});
+
+
+//screen2-api of valves screen updated to maam ka db
 app.get('/nodes/:node_id/valves', (req, res) => {
-  const node_id = parseInt(req.params.node_id, 10);
-  if (isNaN(node_id)) {
+  const node_id = req.params.node_id; // Keep node_id as a string
+
+  if (!node_id) {
       return res.status(400).json({ message: 'Invalid node_id' });
   }
 
-  const query = 'SELECT * FROM Valves WHERE node_id = ?';
+  const query = 'SELECT * FROM valve WHERE nodeID = ?'; // Use correct table name
+
   db.query(query, [node_id], (err, results) => {
       if (err) {
           console.error('Database error:', err);
           return res.status(500).json({ message: 'Database error', error: err });
       }
 
-      console.log(`Fetched Valves for node_id ${node_id}:`, results); // ✅ Console log the fetched data
+      console.log(`Fetched Valves for node_id ${node_id}:`, results);
 
       if (results.length === 0) {
           return res.status(404).json({ message: 'No valves found for this node_id' });
       }
+       console.log(results)
 
       res.json(results);
   });
 });
+
 //storig scheduling
 app.post('/save-schedule', (req, res) => {
   const { node_id, valve_name, duration } = req.body;
