@@ -192,10 +192,10 @@ def forgot_password(cnx):
 #madenew chnages for repating adding of values(li):
 def add_device_to_user(cnx, user_id):
     cursor = cnx.cursor()
-    device_map = {'1': 'uno', '2': 'quadra', '3': 'hexa', '4': 'octa'}
+    device_map = {'1': 'Uno', '2': 'Quadra', '3': 'Hexa', '4': 'Octa'}
     
     while True:
-        device_type_num = input("Enter device type (1: uno, 2: quadra, 3: hexa, 4: octa): ")
+        device_type_num = input("Enter device type (1: Uno, 2: Quadra, 3: Hexa, 4: Octa): ")
         device_type = device_map.get(device_type_num)
         
         if not device_type:
@@ -203,7 +203,7 @@ def add_device_to_user(cnx, user_id):
             continue
         
 
-        if device_type == 'quadra':
+        if device_type == 'Quadra':
             num_controllers = int(input("Enter number of controllers: "))
             
 
@@ -232,11 +232,11 @@ def add_device_to_user(cnx, user_id):
                         valve_name = input(f"Enter valve name for valve {i+1}: ")
                         valve_id = generate_next_id(cnx, 'valve', 'V')
 
-                        add_valve = ("INSERT INTO valve (valveID, valveName, controllerID, nodeID) VALUES (%s, %s, %s, %s)")
-                        cursor.execute(add_valve, (valve_id, valve_name, controller_id, node_id))
+                        add_valve = ("INSERT INTO valve (valveID, valveName, controllerID, nodeID,userID) VALUES (%s, %s, %s, %s,%s)")
+                        cursor.execute(add_valve, (valve_id, valve_name, controller_id, node_id,user_id))
                         insert_fetch(cnx, user_id, controller_id, node_id, valve_id, controller_name, node_name, valve_name, zone_name)
         
-        elif device_type == 'octa':
+        elif device_type == 'Octa':
             controller_name = input("Enter controller name: ")
             node_name = input("Enter node name: ")
             zone_name= input(f"Enter Zone name: ")
@@ -257,11 +257,11 @@ def add_device_to_user(cnx, user_id):
                 valve_name = input(f"Enter valve name for valve {i+1}: ")
                 valve_id = generate_next_id(cnx, 'valve', 'V')
                 
-                add_valve = ("INSERT INTO valve (valveID, valveName, controllerID, nodeID) VALUES (%s, %s, %s, %s)")
-                cursor.execute(add_valve, (valve_id, valve_name, controller_id, node_id))
+                add_valve = ("INSERT INTO valve (valveID, valveName, controllerID, nodeID,userID) VALUES (%s, %s, %s, %s,%s)")
+                cursor.execute(add_valve, (valve_id, valve_name, controller_id, node_id,user_id))
                 insert_fetch(cnx, user_id, controller_id, node_id, valve_id, controller_name, node_name, valve_name, zone_name)
         
-        elif device_type in ['uno', 'hexa']:
+        elif device_type in ['Uno', 'Hexa']:
             controller_name = input("Enter controller name: ")
             node_name = input("Enter node name: ")
             zone_name= input(f"Enter Zone name: ")
@@ -278,8 +278,8 @@ def add_device_to_user(cnx, user_id):
             valve_name = input(f"Enter valve name for valve  ")
             valve_id = generate_next_id(cnx, 'valve', 'V')
 
-            add_valve = ("INSERT INTO valve (valveID, valveName, controllerID, nodeID) VALUES (%s, %s, %s, %s)")
-            cursor.execute(add_valve, (valve_id, valve_name, controller_id, node_id))
+            add_valve = ("INSERT INTO valve (valveID, valveName, controllerID, nodeID,userID) VALUES (%s, %s, %s, %s,%s)")
+            cursor.execute(add_valve, (valve_id, valve_name, controller_id, node_id,user_id))
             insert_fetch(cnx, user_id, controller_id, node_id, valve_id, controller_name, node_name, valve_name, zone_name)
         more_devices = input("Do you want to add another device? (yes/no): ").strip().lower()
         if more_devices != 'yes':

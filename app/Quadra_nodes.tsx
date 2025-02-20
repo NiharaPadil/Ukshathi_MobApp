@@ -1,4 +1,6 @@
 
+//dont remove commentsssss
+
 import { View, Text, Pressable, Image, ActivityIndicator, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import React, { useState, useEffect } from 'react';
@@ -8,34 +10,64 @@ import Constants from 'expo-constants';
 const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL ?? '';
 
 export default function Screen1() {
+  type NodeType = {
+        nodeID: string | number;
+        nodeName: string;
+        batteryVoltage: number;
+      };
   const router = useRouter();
-  const [nodes, setNodes] = useState<{ node_id: number; name: string }[]>([]); // State to store fetched nodes
+  const [nodes, setNodes] = useState<NodeType[]>([]); // State to store fetched nodes
   const [loading, setLoading] = useState(true); // Loading state
+  //uncomment durig dynamic fetch
+  // const [userID, setUserID] = useState<string | null>(null);  // Store userID
 
+  //comment dduring dynsmic fecth
+  const userID = "8";
+
+  //uncomment dduring ynamic fetch
+
+    // useEffect(() => {
+  //   const fetchUserID = async () => {
+  //     try {
+  //       const storedUserID = await AsyncStorage.getItem('userID'); // Retrieve stored userID
+  //       if (storedUserID) {
+  //         setUserID(storedUserID);
+  //         fetchNodes(storedUserID);
+  //       }
+  //     } catch (error) {
+  //       console.error('Error fetching userID:', error);
+  //     }
+  //   };
+
+  //   fetchUserID();
+  // }, []);
+
+  //coomnet when dynamic id u fetch
   useEffect(() => {
-    const fetchNodes = async () => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/nodes`);
-        if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
-        const data = await response.json();
-        setNodes(data);
-      } catch (error) {
-        console.error('Error fetching nodes:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchNodes();
+    fetchNodes(userID);
   }, []);
 
-  const handleNodePress = async (node_id: number) => {
+  const fetchNodes = async (userID: string) => {
     try {
-      await AsyncStorage.setItem('selectedNodeId', node_id.toString()); // Store node_id in AsyncStorage
-      console.log(`Stored node_id: ${node_id}`);
-      router.push(`./quadra_screens/screen2?id=${node_id}`);
+      //use storeduserid during dynamic fetch
+      const response = await fetch(`${API_BASE_URL}/nodes?userID=${userID}`);
+      if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+      const data: NodeType[] = await response.json();
+      setNodes(data);
     } catch (error) {
-      console.error('Error saving node_id to AsyncStorage:', error);
+      console.error('Error fetching nodes:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleNodePress = async (nodeID:string | number) => {
+    try {
+      await AsyncStorage.setItem('selectedNodeId', nodeID.toString());
+      console.log(`Stored nodeID: ${nodeID}`);
+      router.push(`./quadra_screens/screen2?id=${nodeID}`);
+    } catch (error) {
+      console.error('Error saving nodeID:', error);
     }
   };
 
@@ -59,11 +91,11 @@ export default function Screen1() {
         ) : (
           nodes.map((node) => (
             <Pressable
-              key={node.node_id}
+              key={node.nodeID}
               style={styles.nodeButton}
-              onPress={() => handleNodePress(node.node_id)}
+              onPress={() => handleNodePress(node.nodeID)}
             >
-              <Text style={styles.nodeText}>{node.name}</Text>
+              <Text style={styles.nodeText}>{node.nodeName}</Text>
             </Pressable>
           ))
         )}
@@ -119,5 +151,4 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
 });
-
 

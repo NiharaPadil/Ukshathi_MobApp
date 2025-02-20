@@ -15,7 +15,7 @@ const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL ?? '';
 
 export default function Screen2() {
   const [nodeId, setNodeId] = useState<string | null>(null);
-  const [valves, setValves] = useState<{ valve_id: number; node_id: number; valve_name: string }[]>([]);
+  const [valves, setValves] = useState<{ valveID: number; nodeID: number; valveName  : string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -76,7 +76,7 @@ export default function Screen2() {
                   style={styles.valveButton}
                   onPress={() => router.push('/quadra_screens/screen3')}
                 >
-                  <Text style={styles.valveText}>{valve.valve_name}</Text>
+                  <Text style={styles.valveText}>{valve.valveName}</Text>
                 </Pressable>
               ))
             ) : (
