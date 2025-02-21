@@ -225,6 +225,7 @@ def add_device_to_user(cnx, user_id):
                     node_id = generate_next_id(cnx, 'node', 'N')
 
                     add_node = ("INSERT INTO node (nodeID, nodeName, batteryVoltage, controllerID) VALUES (%s, %s, %s, %s)")
+                    # add_battery = ("INSERT INTO battery (nodeID, batteryVoltage) VALUES (%s, %s)") I think this should be added 
                     cursor.execute(add_node, (node_id, node_name, battery_voltage, controller_id))
 
                     num_valves = int(input("Enter number of valves: "))

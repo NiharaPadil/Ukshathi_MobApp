@@ -1,11 +1,13 @@
 //serve.js
 
 const express = require("express");
+const router = express.Router();
 const mysql = require("mysql2");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
 require("dotenv").config();
+
 
 const app = express();
 app.use(cors({origin: '*' }));
@@ -227,6 +229,7 @@ app.post('/login', async (req, res) => {
 
     const user = results[0];
     const isMatch = await bcrypt.compare(passwordHash + pepper, user.passwordHash);
+    
 
     if (isMatch) {
       console.log('Login successful for:', userEmail);
@@ -238,6 +241,8 @@ app.post('/login', async (req, res) => {
       });
     } else {
       console.log('Invalid password for:', userEmail);
+      console.log(passwordHash + pepper);
+      console.log(user.passwordHash)
       return res.status(400).json({ success: false, message: 'Invalid password' });
     }
   } catch (error) {
@@ -299,7 +304,8 @@ app.get('/nodes', (req, res) => {
 });
 
 
-//screen2-api of valves screen updated to maam ka db
+//Valve 2 API
+
 app.get('/nodes/:node_id/valves', (req, res) => {
   const node_id = req.params.node_id; // Keep node_id as a string
 
@@ -325,6 +331,131 @@ app.get('/nodes/:node_id/valves', (req, res) => {
       res.json(results);
   });
 });
+
+
+//Battery Voltage API
+
+// i think we need to fetch using nodeid and not valve id and this query also might be wrong , bcz its fetching from battery table but pyscript is not storing to battery voltage 
+//it should be stored to battery voltage right ? , thats why that time my api was working and now i got to know that i should fetch from node table and not battery table
+//am tired now , i cant thing of query bruh , api also is not working , try to solve okay 
+
+// from here to.................
+// app.get('/battery/:valveID', async (req, res) => {
+//   console.log("Received request for valve:", req.params.valveID);
+//   const valveID = req.params.valveID.trim();
+//   console.log("Received valveID:", `'${valveID}'`); //debugg point
+
+
+//   const query = `
+//       SELECT b.batteryVoltage
+//       FROM battery b
+//       JOIN valve v ON b.nodeID = v.nodeID
+//       WHERE v.valveID = ?;
+//   `;
+
+//   db.query(query, [valveID], (error, results) => {
+//       if (error) {
+//           console.error('Error retrieving battery voltage:', error);
+//           return res.status(500).json({ error: 'Internal server error' });
+//       }
+//       console.log("Query Results:", results); // DEBUG LINE
+
+//       if (results.length === 0) {
+//           return res.status(404).json({ error: 'No battery voltage found for this valve' });
+//       }
+
+//       res.json(results[0]); // Send the first result
+//   });
+// });
+
+//Nihara: i do not know what this is for, might use it later , dont delete .... idk this , let it be commented only , if u think its not needed , then delete it 
+
+
+
+     // API to fetch latest Battery Voltage data for a node
+     // router.get("/nodes/:node_id/battery", (req, res) => {
+     //    const { node_id } = req.params;
+     //   const query = "SELECT * FROM batteryVoltage WHERE node_id = ? ORDER BY timestamp DESC LIMIT 1";
+
+     //   pool.query(query, [node_id], (err, results) => {
+     //     if (err) {
+     //       console.error("Error fetching battery voltage data:", err);
+     //       return res.status(500).json({ error: "Database error", details: err });
+     //     }
+
+      //     if (results.length === 0) {
+      //       return res.status(404).json({ error: "No battery voltage data found" });
+      //     }
+
+      //     res.json(results[0]); // Send the latest battery voltage reading
+      //   });
+      // });
+
+
+
+// Flow Rate API
+// app.get('/flowmeter/:valveID', async (req, res) => {
+//   console.log("Received request for valve:", req.params.valveID);
+//   const valveID = req.params.valveID.trim();
+//   console.log("Received valveID:", `'${valveID}'`); // Debugging point
+
+//   const query = `
+//       SELECT f.flowRate
+//       FROM flowmeter f
+//       JOIN valve v ON f.nodeID = v.nodeID
+//       WHERE v.valveID = ?;
+//   `;
+
+//   db.query(query, [valveID], (error, results) => {
+//       if (error) {
+//           console.error('Error retrieving flow rate:', error);
+//           return res.status(500).json({ error: 'Internal server error' });
+//       }
+//       console.log("Query Results:", results); // Debug line
+
+//       if (results.length === 0) {
+//           return res.status(404).json({ error: 'No flow rate found for this valve' });
+//       }
+
+//       res.json(results[0]); // Send the first result
+//   });
+// });
+
+
+app.get('/battery/:nodeID', async (req, res) => {
+  console.log("Received request for node:", req.params.nodeID);
+  const nodeID = req.params.nodeID.trim();
+
+  const query = `
+      SELECT batteryVoltage
+      FROM node
+      WHERE nodeID = ?;
+  `;
+
+  db.query(query, [nodeID], (error, results) => {
+      if (error) {
+          console.error('Error retrieving battery voltage:', error);
+          return res.status(500).json({ error: 'Internal server error' });
+      }
+
+      console.log("Query Results:", results); // Debugging
+
+      if (results.length === 0) {
+          return res.status(404).json({ error: 'No battery voltage found for this node' });
+      }
+
+      res.json(results[0]); // Send the first result
+  });
+});
+
+// ......... till here 
+
+
+
+
+
+
+
 
 //storig scheduling
 app.post('/save-schedule', (req, res) => {
@@ -355,33 +486,7 @@ app.get('/get-schedule', (req, res) => {
 });
 
 
-//{
-//not yet implemneted: 
 
-// Fetch flow meter data for a node
-// app.get('/nodes/:node_id/flowmeters', (req, res) => {
-//     const { node_id } = req.params;
-//     const query = 'SELECT * FROM FlowMeters WHERE node_id = ? ORDER BY timestamp DESC';
-//     db.query(query, [node_id], (err, results) => {
-//         if (err) {
-//             return res.status(500).json({ message: 'Database error', error: err });
-//         }
-//         res.json(results);
-//     });
-// });
-
-// Fetch battery voltage data for a node
-// app.get('/nodes/:node_id/battery', (req, res) => {
-//     const { node_id } = req.params;
-//     const query = 'SELECT * FROM BatteryVoltage WHERE node_id = ? ORDER BY timestamp DESC';
-//     db.query(query, [node_id], (err, results) => {
-//         if (err) {
-//             return res.status(500).json({ message: 'Database error', error: err });
-//         }
-//         res.json(results);
-//     });
-// });
-//}
 
 // Start Server
   const PORT = process.env.PORT || 5000;

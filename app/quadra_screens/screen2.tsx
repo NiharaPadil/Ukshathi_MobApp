@@ -5,6 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import { router } from 'expo-router';
 import Constants from 'expo-constants';
+import axios from 'axios';
 
 const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL ?? '';
 
@@ -14,6 +15,10 @@ export default function Screen2() {
   const [valves, setValves] = useState<{ valveID: number; nodeID: number; valveName  : string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+//Flowmweter and battery voltage
+  const [flowMeter, setFlowMeter] = useState(0);
+  const [batteryVoltage, setBatteryVoltage] = useState(0);
+  const [selectedValveId, setSelectedValveId] = useState<number | null>(null);
 
   // Fetch node_id from AsyncStorage when screen is focused
   useFocusEffect(
@@ -27,18 +32,21 @@ export default function Screen2() {
     }, [])
   );
 
-  // Fetch valves data based on nodeId
+  // Fetch valves for the selected node
+  // from here okay 
   useEffect(() => {
-    if (!nodeId) return; // Wait for nodeId before making API call
+    if (!nodeId) return;
     const fetchValves = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/nodes/${nodeId}/valves`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch valves');
+        setLoading(true);
+        const response = await axios.get(`${API_BASE_URL}/nodes/${nodeId}/valves`);
+        console.log("Fetched Valves:", response.data);
+        setValves(response.data);
+
+        // Automatically select the first valve by default
+        if (response.data.length > 0) {
+          setSelectedValveId(response.data[0].valveID);
         }
-        const data = await response.json();
-        console.log("Fetched Valves Data:", data);
-        setValves(data);
       } catch (err) {
         console.error("Error fetching valves:", err);
         setError('Failed to fetch valves');
@@ -48,6 +56,34 @@ export default function Screen2() {
     };
     fetchValves();
   }, [nodeId]);
+
+
+   // Fetch FlowMeter and Battery Voltage when a valve is selected
+  useEffect(() => {
+    if (!selectedValveId) return;
+
+    const fetchData = async () => {
+      try {
+        const [flowResponse, batteryResponse] = await Promise.all([
+          axios.get(`${API_BASE_URL}/flowmeter/${selectedValveId}`),
+          axios.get(`${API_BASE_URL}/battery/${selectedValveId}`)
+        ]);
+
+        setFlowMeter(flowResponse.data.flowRate);
+        setBatteryVoltage(batteryResponse.data.batteryVoltage);
+        console.log("Flow Meter:", flowResponse.data.flowRate);
+        console.log("Battery Voltage:", batteryResponse.data.batteryVoltage);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+    const interval = setInterval(fetchData, 5000);
+
+    return () => clearInterval(interval);
+  }, [selectedValveId]);
+
 
   return (
     <View style={styles.container}>
@@ -80,14 +116,23 @@ export default function Screen2() {
             )}
           </View>
 
+
+
+          {/* FlowMeter and Battery Voltage Section */}
           <View style={styles.infoContainer}>
+
             <View style={styles.infoBox}>
               <Text style={styles.infoTitle}>Flow Meter</Text>
-              <Text style={styles.infoValue}>Value: 123 L/min</Text>
+              <Text style={styles.infoValue}>
+                Value: {flowMeter !== null ? `${flowMeter} L/min` : 'Loading...'}
+              </Text>
             </View>
+
             <View style={[styles.infoBox, styles.batteryBox]}>
               <Text style={styles.infoTitle}>Battery Voltage</Text>
-              <Text style={styles.infoValue}>Value: 12.6V</Text>
+              <Text style={styles.infoValue}>
+                Value: {batteryVoltage !== null ? `${batteryVoltage} V` : 'Loading...'}
+              </Text>
             </View>
           </View>
         </View>
