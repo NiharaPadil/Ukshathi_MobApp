@@ -1,3 +1,5 @@
+//screem2.tsx:
+//WARNING DONT REMOVE ANY COMMNETS
 
 import { View, Text, Pressable, ActivityIndicator, StyleSheet } from 'react-native';
 import React, { useEffect, useState } from 'react';
@@ -5,48 +7,49 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import { router } from 'expo-router';
 import Constants from 'expo-constants';
-import axios from 'axios';
+import { useLocalSearchParams } from 'expo-router';
 
 const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL ?? '';
 
 
 export default function Screen2() {
-  const [nodeId, setNodeId] = useState<string | null>(null);
+  //Using params
+  const params = useLocalSearchParams();
+const [nodeId, setNodeId] = useState<string | null>(Array.isArray(params.id) ? params.id[0] : params.id); //thru paramss
+
   const [valves, setValves] = useState<{ valveID: number; nodeID: number; valveName  : string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-//Flowmweter and battery voltage
-  const [flowMeter, setFlowMeter] = useState(0);
-  const [batteryVoltage, setBatteryVoltage] = useState(0);
-  const [selectedValveId, setSelectedValveId] = useState<number | null>(null);
+  const [batteryVoltage, setBatteryVoltage] = useState<string | null>(null); 
+  const [flowRate, setFlowRate] = useState<string | null>(null);
 
-  // Fetch node_id from AsyncStorage when screen is focused
-  useFocusEffect(
-    React.useCallback(() => {
-      const getNodeId = async () => {
-        const storedNodeId = await AsyncStorage.getItem('selectedNodeId');
-        console.log('Retrieved Node ID:', storedNodeId);
-        setNodeId(storedNodeId);
-      };
-      getNodeId();
-    }, [])
-  );
+//WARNING:DONT REMOVE THIS COMMNETS:
 
-  // Fetch valves for the selected node
-  // from here okay 
+  // useFocusEffect(
+  //   React.useCallback(() => {
+  //     const getNodeId = async () => {
+  //       const storedNodeId = await AsyncStorage.getItem('selectedNodeId');
+  //       console.log('Retrieved Node ID:', storedNodeId);
+  //       setNodeId(storedNodeId);
+  //     };
+  //     getNodeId();
+  //   }, [])
+  // );
+
+  
+
+  // Fetch valves data based on nodeId
   useEffect(() => {
-    if (!nodeId) return;
+    if (!nodeId) return; // Wait for nodeId before making API call
     const fetchValves = async () => {
       try {
-        setLoading(true);
-        const response = await axios.get(`${API_BASE_URL}/nodes/${nodeId}/valves`);
-        console.log("Fetched Valves:", response.data);
-        setValves(response.data);
-
-        // Automatically select the first valve by default
-        if (response.data.length > 0) {
-          setSelectedValveId(response.data[0].valveID);
+        const response = await fetch(`${API_BASE_URL}/nodes/${nodeId}/valves`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch valves');
         }
+        const data = await response.json();
+        console.log("Fetched Valves Data:", data);
+        setValves(data);
       } catch (err) {
         console.error("Error fetching valves:", err);
         setError('Failed to fetch valves');
@@ -58,31 +61,48 @@ export default function Screen2() {
   }, [nodeId]);
 
 
-   // Fetch FlowMeter and Battery Voltage when a valve is selected
+  //fetch battery volatege
   useEffect(() => {
-    if (!selectedValveId) return;
+    if (!nodeId) return; // Wait for nodeId before making API call
 
-    const fetchData = async () => {
+    const fetchBatteryVoltage = async () => {
       try {
-        const [flowResponse, batteryResponse] = await Promise.all([
-          axios.get(`${API_BASE_URL}/flowmeter/${selectedValveId}`),
-          axios.get(`${API_BASE_URL}/battery/${selectedValveId}`)
-        ]);
-
-        setFlowMeter(flowResponse.data.flowRate);
-        setBatteryVoltage(batteryResponse.data.batteryVoltage);
-        console.log("Flow Meter:", flowResponse.data.flowRate);
-        console.log("Battery Voltage:", batteryResponse.data.batteryVoltage);
-      } catch (error) {
-        console.error("Error fetching data:", error);
+        const response = await fetch(`${API_BASE_URL}/battery/${nodeId}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch battery voltage');
+        }
+        const data = await response.json();
+        console.log("Fetched Battery Voltage:", data);
+        setBatteryVoltage(data.batteryVoltage.toString() + "V"); 
+      } catch (err) {
+        console.error("Error fetching battery voltage:", err);
+        setBatteryVoltage("N/A"); 
       }
     };
 
-    fetchData();
-    const interval = setInterval(fetchData, 5000);
+    fetchBatteryVoltage();
+  }, [nodeId]);
 
-    return () => clearInterval(interval);
-  }, [selectedValveId]);
+
+  //fetch flowrate/flowmetere
+  useEffect(() => {
+    if (!nodeId) return;
+    const fetchFlowRate = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/flowmeter/${nodeId}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch flow rate');
+        }
+        const data = await response.json();
+        console.log("Fetched Flow Rate:", data);
+        setFlowRate(data.flowRate ? `${data.flowRate} L/min` : "N/A");
+      } catch (err) {
+        console.error("Error fetching flow rate:", err);
+        setFlowRate("N/A");
+      }
+    };
+    fetchFlowRate();
+  }, [nodeId]);
 
 
   return (
@@ -116,23 +136,15 @@ export default function Screen2() {
             )}
           </View>
 
-
-
-          {/* FlowMeter and Battery Voltage Section */}
           <View style={styles.infoContainer}>
-
             <View style={styles.infoBox}>
               <Text style={styles.infoTitle}>Flow Meter</Text>
-              <Text style={styles.infoValue}>
-                Value: {flowMeter !== null ? `${flowMeter} L/min` : 'Loading...'}
-              </Text>
+              <Text style={styles.infoValue}>Value: {flowRate || "Loading..."}</Text> 
             </View>
-
             <View style={[styles.infoBox, styles.batteryBox]}>
               <Text style={styles.infoTitle}>Battery Voltage</Text>
-              <Text style={styles.infoValue}>
-                Value: {batteryVoltage !== null ? `${batteryVoltage} V` : 'Loading...'}
-              </Text>
+              <Text style={styles.infoValue}>Value: {String(batteryVoltage || "Loading...")}</Text>
+{/* Updated */}
             </View>
           </View>
         </View>
@@ -226,6 +238,3 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
 });
-
-
-

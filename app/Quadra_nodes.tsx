@@ -1,3 +1,7 @@
+//Quadra_nodes:
+//WARNING:DONT REMOVE ANY COMMNETS
+
+
 import { View, Text, Pressable, Image, ActivityIndicator, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import React, { useState, useEffect } from 'react';
@@ -50,16 +54,23 @@ export default function Screen1() {
       setLoading(false);
     }
   };
+//WARNING: DONT REMPOVE THIS COMMNET
 
-  const handleNodePress = async (nodeID:string | number) => {
-    try {
-      await AsyncStorage.setItem('selectedNodeId', nodeID.toString());
-      console.log(`Stored nodeID: ${nodeID}`);
-      router.push(`./quadra_screens/screen2?id=${nodeID}`);
-    } catch (error) {
-      console.error('Error saving nodeID:', error);
-    }
+  // const handleNodePress = async (nodeID:string | number) => {
+  //   try {
+  //     await AsyncStorage.setItem('selectedNodeId', nodeID.toString());
+  //     console.log(`Stored nodeID: ${nodeID}`);
+  //     router.push(`./quadra_screens/screen2?id=${nodeID}`);
+  //   } catch (error) {
+  //     console.error('Error saving nodeID:', error);
+  //   }
+  // };
+
+  //BY params
+  const handleNodePress = (nodeID: string | number) => {
+    router.push({ pathname: './quadra_screens/screen2', params: { id: nodeID } });
   };
+  
 
     // 🔹 Group nodes by controllerID
     const groupedNodes: Record<string, NodeType[]> = nodes.reduce((acc, node) => {

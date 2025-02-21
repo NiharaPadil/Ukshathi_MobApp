@@ -333,40 +333,71 @@ app.get('/nodes/:node_id/valves', (req, res) => {
 });
 
 
-//Battery Voltage API
+//Battery Voltage APi
 
-// i think we need to fetch using nodeid and not valve id and this query also might be wrong , bcz its fetching from battery table but pyscript is not storing to battery voltage 
-//it should be stored to battery voltage right ? , thats why that time my api was working and now i got to know that i should fetch from node table and not battery table
-//am tired now , i cant thing of query bruh , api also is not working , try to solve okay 
+//battery api working for maam new db - screen2
+app.get('/battery/:nodeID', async (req, res) => {
+  console.log("Received request for node:", req.params.nodeID);
+  const nodeID = req.params.nodeID.trim();
+  console.log("Received nodeID:", `'${nodeID}'`); // Debugging
 
-// from here to.................
-// app.get('/battery/:valveID', async (req, res) => {
-//   console.log("Received request for valve:", req.params.valveID);
-//   const valveID = req.params.valveID.trim();
-//   console.log("Received valveID:", `'${valveID}'`); //debugg point
+  const query = `
+      SELECT batteryVoltage
+      FROM node
+      WHERE nodeID = ?;
+  `;
+
+  db.query(query, [nodeID], (error, results) => {
+      if (error) {
+          console.error('Error retrieving battery voltage:', error);
+          return res.status(500).json({ error: 'Internal server error' });
+      }
+      console.log("Query Results:", results); // Debugging
+
+      if (results.length === 0) {
+          return res.status(404).json({ error: 'No battery voltage found for this node' });
+      }
+
+      res.json({ batteryVoltage: results[0].batteryVoltage }); 
+  });
+});
 
 
-//   const query = `
-//       SELECT b.batteryVoltage
-//       FROM battery b
-//       JOIN valve v ON b.nodeID = v.nodeID
-//       WHERE v.valveID = ?;
-//   `;
+//flowmeter api working with maam db- screen2.tsx
+app.get('/flowmeter/:nodeID', async (req, res) => {
+  try {
+      console.log("Received request for node:", req.params.nodeID);
+      const nodeID = req.params.nodeID.trim();
 
-//   db.query(query, [valveID], (error, results) => {
-//       if (error) {
-//           console.error('Error retrieving battery voltage:', error);
-//           return res.status(500).json({ error: 'Internal server error' });
-//       }
-//       console.log("Query Results:", results); // DEBUG LINE
+      if (!nodeID) {
+          return res.status(400).json({ error: 'Invalid nodeID' });
+      }
 
-//       if (results.length === 0) {
-//           return res.status(404).json({ error: 'No battery voltage found for this valve' });
-//       }
+      const query = `SELECT flowRate FROM flowmeter WHERE nodeID = ?`;
 
-//       res.json(results[0]); // Send the first result
-//   });
-// });
+      db.query(query, [nodeID], (error, results) => {
+          if (error) {
+              console.error('Database error:', error);
+              return res.status(500).json({ error: 'Database query failed' });
+          }
+
+          console.log("Query Results:", results);
+
+          if (results.length === 0) {
+              return res.status(404).json({ error: 'No flow rate found for this node' });
+          }
+
+          res.json({ nodeID, flowRate: results[0].flowRate });
+      });
+
+  } catch (err) {
+      console.error("Unexpected error:", err);
+      res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
+
 
 //Nihara: i do not know what this is for, might use it later , dont delete .... idk this , let it be commented only , if u think its not needed , then delete it 
 
@@ -422,40 +453,12 @@ app.get('/nodes/:node_id/valves', (req, res) => {
 // });
 
 
-app.get('/battery/:nodeID', async (req, res) => {
-  console.log("Received request for node:", req.params.nodeID);
-  const nodeID = req.params.nodeID.trim();
 
-  const query = `
-      SELECT batteryVoltage
-      FROM node
-      WHERE nodeID = ?;
-  `;
-
-  db.query(query, [nodeID], (error, results) => {
-      if (error) {
-          console.error('Error retrieving battery voltage:', error);
-          return res.status(500).json({ error: 'Internal server error' });
-      }
-
-      console.log("Query Results:", results); // Debugging
-
-      if (results.length === 0) {
-          return res.status(404).json({ error: 'No battery voltage found for this node' });
-      }
-
-      res.json(results[0]); // Send the first result
-  });
-});
 
 // ......... till here 
 
 
-
-
-
-
-
+//pending from here agin for screen3
 
 //storig scheduling
 app.post('/save-schedule', (req, res) => {
