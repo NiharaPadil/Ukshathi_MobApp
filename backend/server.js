@@ -462,7 +462,7 @@ app.get('/get-duration/:valveID', async (req, res) => {
 }
 });
 
-///pending apis are for watering time, live status, history, tap
+
 
 //history-api working for new maanm db- screen3.tsx
 app.get('/get-history/:valveID', (req, res) => {
@@ -491,6 +491,8 @@ app.get('/get-history/:valveID', (req, res) => {
       res.json(results);
   });
 });
+
+///pending apis are for watering time, live status, tap
 
 
 // Start Server
