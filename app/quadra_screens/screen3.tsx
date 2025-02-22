@@ -1,8 +1,8 @@
-import { View, Text, Pressable, Switch, FlatList, Modal, Platform , ActivityIndicator} from 'react-native';
+import { View, Text, Pressable, Switch, FlatList, Modal,Alert, Platform , ActivityIndicator} from 'react-native';
 import { useRouter, useLocalSearchParams,useNavigation } from 'expo-router';
 // import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker'; // Import Picker for duration selection
-import React, { useState } from 'react';
+import React, { useEffect,useState } from 'react';
 import Constants from 'expo-constants';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -10,16 +10,17 @@ const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL ?? '';
 
 export default function Screen3() {
   const router = useRouter();
-  const { valveName, nodeId } = useLocalSearchParams(); // Retrieve parameters passed from the previous screen
+  const params = useLocalSearchParams();
+  const valveID = params.id;; // Retrieve parameters passed from the previous screen
+  console.log(valveID)
   const [isTapOn, setIsTapOn] = useState(false); // Toggle for the tap (ON/OFF)
   const [wateringTime, setWateringTime] = useState(new Date()); // Holds the selected time
   const [showTimePicker, setShowTimePicker] = useState(false); // Control time picker visibility
   const [showDurationPicker, setShowDurationPicker] = useState(false); // Control duration picker visibility
   const [duration, setDuration] = useState(15); // Holds the watering duration (default 15 minutes)
-   //live valveee status code====== adithiiiii addedddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
   const [liveValveStatus, setLiveValveStatus] = useState(false); // Boolean state// Initially OFF
    const [statusMessage, setStatusMessage] = useState('');
-   //live valveee status code====== adithiiiii addedddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+
 
    //histroyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
   const [showHistoryPopup, setShowHistoryPopup] = useState(false);
@@ -51,7 +52,7 @@ export default function Screen3() {
   }, [navigation]);
 
 
-//LIVE VALVE STATUS ADITHIIIIIIIIIIII ADDEDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD
+//LIVE VALVE STATUS ADITHIIIIIIIIIIII 
 const handleLiveValveToggle = () => {
   setStatusMessage('Processing'); //first this shows processing state
   
@@ -66,10 +67,76 @@ const handleLiveValveToggle = () => {
     }
   }, 2000); // this waits for 30 seconds before telling success or failure
 };
-//LIVE VALVE STATUS ADITHIIIIIIIIIIII ADDEDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD
+//LIVE VALVE STATUS ADITHIIIIIIIIIIII 
 
 
 // #809c13
+
+//function to send duration to be saved in db
+const sendDurationToBackend = async (selectedDuration: number) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/set-duration`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ 
+        valveID, 
+        duration: selectedDuration 
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Server error: ${response.status}`); // Throw error for non-200 responses
+    }
+
+    const data = await response.json();
+    console.log('Response from backend:', data);
+    return data; // Return response data if needed
+  } catch (error) {
+    console.error('Error sending duration:', error);
+    throw error; // Re-throw error to handle it in the UI
+  }
+};
+
+
+//function to get duration from db so tht it will be in latest duration fecthed
+const fetchLastSavedDuration = async () => {
+  try {
+    console.log("Fetching duration for valveID:", valveID); // Debugging log
+
+    if (!valveID) {
+      console.error("valveID is undefined or empty!");
+      return;
+    }
+
+    const response = await fetch(`${API_BASE_URL}/get-duration/${valveID}`);
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch duration: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log("Fetched data:", data);
+
+    if (data.duration !== undefined) {
+      setDuration(data.duration); // Update UI with the saved duration
+    }
+  } catch (error) {
+    console.error('Error fetching duration:', error);
+  }
+};
+
+// Call this function when the component mounts
+useEffect(() => {
+  fetchLastSavedDuration();
+}, []);
+
+
+// Fetch duration when the component mounts
+useEffect(() => {
+  fetchLastSavedDuration();
+}, []);
 
   return (
     <View style={{ flex: 1, alignItems: 'center', backgroundColor: '#f0f0f0' }}>
@@ -90,10 +157,8 @@ const handleLiveValveToggle = () => {
                        {{ 
                         fontSize: 22, // Sets the font size to 22 points
                         fontWeight: 'bold' // Makes the text bold
-                  }}>Controls : Node {nodeId}-{valveName} </Text>
+                  }}>Controls : Valve {valveID} </Text>
                </View>
-
-
 
 
 
@@ -149,6 +214,7 @@ const handleLiveValveToggle = () => {
 
 
       {/* Set Watering Duration */}
+      {/*for this whollee part api done*/}
 <View style={{ marginTop: 20, alignItems: 'center' }}>
   <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 8 }}>Set Watering Duration:</Text>
   
@@ -168,6 +234,7 @@ const handleLiveValveToggle = () => {
       shadowRadius: 4,
     }}
     onPress={() => setShowDurationPicker(true)} // Show the duration picker modal
+  
   >
     <Text style={{ fontSize: 16, color: '#fff', fontWeight: 'bold' }}>
       {duration} min
@@ -222,7 +289,15 @@ const handleLiveValveToggle = () => {
             borderRadius: 8,
             alignItems: 'center',
           }}
-          onPress={() => setShowDurationPicker(false)} // Close the modal
+          onPress={async () => {
+            try {
+              await sendDurationToBackend(duration); // Save to DB
+              Alert.alert("Success", "Values saved successfully to DB"); // Show success message
+              setShowDurationPicker(false); // Close modal
+            } catch (error) {
+              Alert.alert("Error", "Failed to save values to DB"); // Handle errors
+            }
+          }}
         >
           <Text style={{ color: '#fff', fontSize: 16, fontWeight: 'bold' }}>Confirm</Text>
         </Pressable>
@@ -234,6 +309,7 @@ const handleLiveValveToggle = () => {
 
 
 
+{/* LIVE VALVE STATUS ADITHIIIIIIIIIIII ADDEDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD */}
 {/* LIVE VALVE STATUS ADITHIIIIIIIIIIII ADDEDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD */}
 {/* Live Valve Status Section */}
 <View style={{ marginTop: 20, width: '100%', alignItems: 'center' }}>
@@ -267,10 +343,6 @@ const handleLiveValveToggle = () => {
     {statusMessage}
   </Text>
 </View>
-
-
-{/* LIVE VALVE STATUS ADITHIIIIIIIIIIII ADDEDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD */}
-
 
 
 
