@@ -1,3 +1,8 @@
+//Screen3.tsx
+//refer screen3.txt before strting
+
+
+
 import { View, Text, Pressable, Switch, FlatList, Modal,Alert, Platform , ActivityIndicator} from 'react-native';
 import { useRouter, useLocalSearchParams,useNavigation } from 'expo-router';
 // import DateTimePicker from '@react-native-community/datetimepicker';
@@ -8,33 +13,32 @@ import { Ionicons } from '@expo/vector-icons';
 
 const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL ?? '';
 
+//TO DISPLAY ALL ITEMS FROM HISTORY:
+type HistoryItem = {
+  valveID: string | number;
+  wateredDateTime: string;
+  wateredDuration: string | null;
+  waterVolume: string | null;
+};
+
+
 export default function Screen3() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const valveID = params.id;; // Retrieve parameters passed from the previous screen
-  console.log(valveID)
-  const [isTapOn, setIsTapOn] = useState(false); // Toggle for the tap (ON/OFF)
-  const [wateringTime, setWateringTime] = useState(new Date()); // Holds the selected time
-  const [showTimePicker, setShowTimePicker] = useState(false); // Control time picker visibility
-  const [showDurationPicker, setShowDurationPicker] = useState(false); // Control duration picker visibility
-  const [duration, setDuration] = useState(15); // Holds the watering duration (default 15 minutes)
-  const [liveValveStatus, setLiveValveStatus] = useState(false); // Boolean state// Initially OFF
-   const [statusMessage, setStatusMessage] = useState('');
-
-
-   //histroyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+  const valveID = params.id;;
+  const [isTapOn, setIsTapOn] = useState(false); 
+  const [wateringTime, setWateringTime] = useState(new Date()); 
+  const [showTimePicker, setShowTimePicker] = useState(false); 
+  const [showDurationPicker, setShowDurationPicker] = useState(false); 
+  const [duration, setDuration] = useState(15); 
+  const [liveValveStatus, setLiveValveStatus] = useState(false);
+   const [statusMessage, setStatusMessage] = useState('');   
+   const [historyData, setHistoryData] = useState<HistoryItem[]>([]);
   const [showHistoryPopup, setShowHistoryPopup] = useState(false);
-//histroyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+
 
   const navigation = useNavigation();
 
- 
-  // Example history data
-  const historyData = [
-    { id: '1', time: '10:00 AM', duration: '30 min' },
-    { id: '2', time: '2:00 PM', duration: '15 min' },
-    { id: '3', time: '6:30 PM', duration: '45 min' },
-  ];
 
   // Handle time selection from the time picker
   
@@ -65,14 +69,15 @@ const handleLiveValveToggle = () => {
     } else {
       setStatusMessage('CMD Failed');
     }
-  }, 2000); // this waits for 30 seconds before telling success or failure
+  }, 2000); 
 };
 //LIVE VALVE STATUS ADITHIIIIIIIIIIII 
 
 
-// #809c13
 
-//function to send duration to be saved in db
+//FUNCTIONS FROM HERE WORKING FOR NEW API-DB
+
+//1) WATERING DURATION 1ST PART: function to send duration to be saved in db
 const sendDurationToBackend = async (selectedDuration: number) => {
   try {
     const response = await fetch(`${API_BASE_URL}/set-duration`, {
@@ -100,7 +105,7 @@ const sendDurationToBackend = async (selectedDuration: number) => {
 };
 
 
-//function to get duration from db so tht it will be in latest duration fecthed
+//2) WAYERING DURATION 2ND PART: function to get duration from db so tht it will be in latest duration fecthed
 const fetchLastSavedDuration = async () => {
   try {
     console.log("Fetching duration for valveID:", valveID); // Debugging log
@@ -132,11 +137,23 @@ useEffect(() => {
   fetchLastSavedDuration();
 }, []);
 
+//3) HISTORY FUNCTION: to diaply history from db for particular node
+const fetchHistory = async () => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/get-history/${valveID}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    const data: HistoryItem[] = await response.json(); // Use the defined type
+    setHistoryData(data); // Update state
+  } catch (error) {
+    console.error('Error fetching history:', error);
+  }
+};
 
-// Fetch duration when the component mounts
-useEffect(() => {
-  fetchLastSavedDuration();
-}, []);
+
+
+
 
   return (
     <View style={{ flex: 1, alignItems: 'center', backgroundColor: '#f0f0f0' }}>
@@ -212,9 +229,10 @@ useEffect(() => {
 
 
 
+{/*WORKING THIS*/}
+ {/* Set Watering Duration */}    
+   {/*FOR THIS PART WHOLE API THING I SDONE WORKING FINE*/}
 
-      {/* Set Watering Duration */}
-      {/*for this whollee part api done*/}
 <View style={{ marginTop: 20, alignItems: 'center' }}>
   <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 8 }}>Set Watering Duration:</Text>
   
@@ -306,11 +324,11 @@ useEffect(() => {
   </Modal>
 </View>
 
+{/*TILL HERE WATERING DURATION*/}
 
 
 
-{/* LIVE VALVE STATUS ADITHIIIIIIIIIIII ADDEDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD */}
-{/* LIVE VALVE STATUS ADITHIIIIIIIIIIII ADDEDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD */}
+{/* LIVE VALVE STATUS ADITHIIIIIIIIIIII  */}
 {/* Live Valve Status Section */}
 <View style={{ marginTop: 20, width: '100%', alignItems: 'center' }}>
   <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 8 }}>LIVE VALVE STATUS:</Text>
@@ -387,25 +405,25 @@ useEffect(() => {
 
 
 
-
-
-
-
-
-
+{/*WORKING */}
 {/* History Button */}
+{/*APIS WORKING HERE FOR HISTORY */}
+
 <Pressable
         style={{
-          marginTop: 30, 
+          marginTop: 30,
           backgroundColor: '#809c13',
           paddingVertical: 12,
           paddingHorizontal: 20,
           borderRadius: 8,
-          width: 200,  // Already correct, just double-checking
+          width: 200,
           alignItems: 'center',
           justifyContent: 'center',
         }}
-        onPress={() => setShowHistoryPopup(true)}
+        onPress={() => {
+          fetchHistory(); // Fetch history before showing modal
+          setShowHistoryPopup(true);
+        }}
       >
         <Text style={{ color: '#fff', fontSize: 16, fontWeight: 'bold' }}>View History</Text>
       </Pressable>
@@ -421,12 +439,18 @@ useEffect(() => {
           <View style={{ width: '80%', backgroundColor: 'white', borderRadius: 10, padding: 20, alignItems: 'center' }}>
             
             <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10 }}>History</Text>
-            
-            {historyData.map((item) => (
-              <View key={item.id} style={{ backgroundColor: '#ddd', padding: 10, marginTop: 5, borderRadius: 5, width: '100%', alignItems: 'center' }}>
-                <Text>{item.time} - {item.duration}</Text>
-              </View>
-            ))}
+
+            {historyData.length > 0 ? (
+              historyData.map((item, index) => (
+                <View key={index} style={{ backgroundColor: '#ddd', padding: 10, marginTop: 5, borderRadius: 5, width: '100%', alignItems: 'center' }}>
+                  <Text>Time: {item.wateredDateTime}</Text>
+                  <Text>Duration: {item.wateredDuration ?? 'N/A'}</Text>
+                  <Text>Waterr Volume: {item.waterVolume ?? 'N/A'}</Text>
+                </View>
+              ))
+            ) : (
+              <Text>No history available</Text>
+            )}
 
             {/* Close Button */}
             <Pressable
@@ -446,7 +470,6 @@ useEffect(() => {
           </View>
         </View>
       </Modal>
-
 
       {/* Back Button */}
    <Pressable

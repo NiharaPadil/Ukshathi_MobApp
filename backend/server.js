@@ -438,7 +438,7 @@ app.get('/get-duration/:valveID', async (req, res) => {
       return res.status(400).json({ error: 'valveID is required' });
     }
 
-    console.log(`Fetching duration for valveID: ${valveID}`);
+    
 
     const query = `SELECT duration FROM schedule WHERE valveID = ?`;
     db.query(query, [valveID], (error, results) => {
@@ -463,6 +463,34 @@ app.get('/get-duration/:valveID', async (req, res) => {
 });
 
 ///pending apis are for watering time, live status, history, tap
+
+//history-api working for new maanm db- screen3.tsx
+app.get('/get-history/:valveID', (req, res) => {
+  const { valveID } = req.params;
+
+  if (!valveID) {
+     
+    return res.status(400).json({ error: 'valveID is required' });
+  }
+
+  const query = `SELECT * FROM history WHERE valveID = ?`;
+
+  db.query(query, [valveID], (err, results) => {
+      if (err) {
+          console.error('Database error:', err);
+          return res.status(500).json({ message: 'Database error', error: err });
+      }
+
+      
+
+      if (results.length === 0) {
+          return res.status(404).json({ message: 'No history' });
+      }
+       console.log(results)
+
+      res.json(results);
+  });
+});
 
 
 // Start Server
