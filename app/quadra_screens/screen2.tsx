@@ -22,6 +22,7 @@ const [nodeId, setNodeId] = useState<string | null>(Array.isArray(params.id) ? p
   const [error, setError] = useState<string | null>(null);
   const [batteryVoltage, setBatteryVoltage] = useState<string | null>(null); 
   const [flowRate, setFlowRate] = useState<string | null>(null);
+  
 
 //WARNING:DONT REMOVE THIS COMMNETS:
 
@@ -126,7 +127,7 @@ const [nodeId, setNodeId] = useState<string | null>(Array.isArray(params.id) ? p
                 <Pressable
                   key={index}
                   style={styles.valveButton}
-                  onPress={() => router.push('/quadra_screens/screen3')}
+                  onPress={() => router.push({ pathname: '/quadra_screens/screen3', params: { id: valve.valveID } })}
                 >
                   <Text style={styles.valveText}>{valve.valveName}</Text>
                 </Pressable>

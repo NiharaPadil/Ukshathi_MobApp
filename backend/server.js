@@ -304,7 +304,8 @@ app.get('/nodes', (req, res) => {
 });
 
 
-//Valve 2 API
+//Valve API-screen2
+
 app.get('/nodes/:node_id/valves', (req, res) => {
   const node_id = req.params.node_id; // Keep node_id as a string
 
@@ -396,62 +397,100 @@ app.get('/flowmeter/:nodeID', async (req, res) => {
 
 
 
-//Nihara: i do not know what this is for, might use it later , dont delete .... idk this , let it be commented only , if u think its not needed , then delete it 
+//watering duration api working on maam new db-screen3.tsx
+// - twp parts one is to get value and store in db and one more is
+//when u go back and come again it should be in last saved duartion so tht two fucntions
 
+//watering duration
+//to set dusration in db
+app.post("/set-duration", (req, res) => {
+  const { valveID, duration } = req.body;
 
+  if (!valveID || !duration) {
+      return res.status(400).json({ error: "Missing valveID or duration" });
+  }
 
-     // API to fetch latest Battery Voltage data for a node
-     // router.get("/nodes/:node_id/battery", (req, res) => {
-     //    const { node_id } = req.params;
-     //   const query = "SELECT * FROM batteryVoltage WHERE node_id = ? ORDER BY timestamp DESC LIMIT 1";
+  const sql = `
+      INSERT INTO schedule (valveID, duration) 
+      VALUES (?, ?) 
+      ON DUPLICATE KEY UPDATE duration = VALUES(duration)
+  `;
 
-     //   pool.query(query, [node_id], (err, results) => {
-     //     if (err) {
-     //       console.error("Error fetching battery voltage data:", err);
-     //       return res.status(500).json({ error: "Database error", details: err });
-     //     }
-
-      //     if (results.length === 0) {
-      //       return res.status(404).json({ error: "No battery voltage data found" });
-      //     }
-
-      //     res.json(results[0]); // Send the latest battery voltage reading
-      //   });
-      // });
-
-
-
-//pending from here agin for screen3
-
-//storig scheduling
-app.post('/save-schedule', (req, res) => {
-  const { node_id, valve_name, duration } = req.body;
-
-  const query = `INSERT INTO history (node_id, valve_name, duration) VALUES (?, ?, ?)`;
-  db.query(query, [node_id, valve_name, duration], (err, result) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).send('Error saving data');
-    }
-    res.send({ message: 'Schedule saved', id: result.insertId });
-  });
-});
-
-// Fetch Latest Watering Schedule
-app.get('/get-schedule', (req, res) => {
-  const { node_id, valve_name } = req.query;
-
-  const query = `SELECT duration, timestamp FROM history WHERE node_id = ? AND valve_name = ? ORDER BY timestamp DESC LIMIT 1`;
-  db.query(query, [node_id, valve_name], (err, results) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).send('Error fetching data');
-    }
-    res.json(results[0]); // Return latest schedule
+  db.query(sql, [valveID, duration], (err, result) => {
+      if (err) {
+          console.error("Error inserting/updating duration:", err);
+          return res.status(500).json({ error: "Database error" });
+      }
+      res.json({ message: "Duration set successfully", duration });
   });
 });
 
 
+//to set duration -when u go bavk and come to same valve duration will be in lassaved duration in db
+app.get('/get-duration/:valveID', async (req, res) => {
+  try {
+    const { valveID } = req.params; // Extract valveID from URL parameters
+
+    if (!valveID) {
+     
+      return res.status(400).json({ error: 'valveID is required' });
+    }
+
+    
+
+    const query = `SELECT duration FROM schedule WHERE valveID = ?`;
+    db.query(query, [valveID], (error, results) => {
+      if (error) {
+          console.error('Database error:', error);
+          return res.status(500).json({ error: 'Database query failed' });
+      }
+
+      console.log("Query Results:", results);
+
+      if (results.length === 0) {
+          return res.status(404).json({ error: 'No flow rate found for this node' });
+      }
+
+      res.json({ duration: results[0].duration });
+  });
+
+} catch (err) {
+  console.error("Unexpected error:", err);
+  res.status(500).json({ error: 'Internal server error' });
+}
+});
+
+
+
+//history-api working for new maanm db- screen3.tsx
+app.get('/get-history/:valveID', (req, res) => {
+  const { valveID } = req.params;
+
+  if (!valveID) {
+     
+    return res.status(400).json({ error: 'valveID is required' });
+  }
+
+  const query = `SELECT * FROM history WHERE valveID = ?`;
+
+  db.query(query, [valveID], (err, results) => {
+      if (err) {
+          console.error('Database error:', err);
+          return res.status(500).json({ message: 'Database error', error: err });
+      }
+
+      
+
+      if (results.length === 0) {
+          return res.status(404).json({ message: 'No history' });
+      }
+       console.log(results)
+
+      res.json(results);
+  });
+});
+
+///pending apis are for watering time, live status, tap
 
 
 // Start Server
