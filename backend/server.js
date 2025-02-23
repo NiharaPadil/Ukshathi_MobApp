@@ -252,7 +252,7 @@ app.post('/login', async (req, res) => {
 });
 
 
-//landing api -update to new db api
+//Landing API
 app.get('/controller/:id', (req, res) => {
   const id = req.params.id;
   const query = `
@@ -273,7 +273,7 @@ app.get('/controller/:id', (req, res) => {
 
 
 
-//quadra_nodes screen api- changed to maam new db
+//QUadra nodes Screen API
 app.get('/nodes', (req, res) => {
   const { userID } = req.query;
   
@@ -305,7 +305,6 @@ app.get('/nodes', (req, res) => {
 
 
 //Valve 2 API
-
 app.get('/nodes/:node_id/valves', (req, res) => {
   const node_id = req.params.node_id; // Keep node_id as a string
 
@@ -333,9 +332,7 @@ app.get('/nodes/:node_id/valves', (req, res) => {
 });
 
 
-//Battery Voltage APi
-
-//battery api working for maam new db - screen2
+//Battery Voltage APi-Screen2
 app.get('/battery/:nodeID', async (req, res) => {
   console.log("Received request for node:", req.params.nodeID);
   const nodeID = req.params.nodeID.trim();
@@ -363,7 +360,7 @@ app.get('/battery/:nodeID', async (req, res) => {
 });
 
 
-//flowmeter api working with maam db- screen2.tsx
+//Flowmeter  APi-Screen2
 app.get('/flowmeter/:nodeID', async (req, res) => {
   try {
       console.log("Received request for node:", req.params.nodeID);
@@ -422,40 +419,6 @@ app.get('/flowmeter/:nodeID', async (req, res) => {
       //   });
       // });
 
-
-
-// Flow Rate API
-// app.get('/flowmeter/:valveID', async (req, res) => {
-//   console.log("Received request for valve:", req.params.valveID);
-//   const valveID = req.params.valveID.trim();
-//   console.log("Received valveID:", `'${valveID}'`); // Debugging point
-
-//   const query = `
-//       SELECT f.flowRate
-//       FROM flowmeter f
-//       JOIN valve v ON f.nodeID = v.nodeID
-//       WHERE v.valveID = ?;
-//   `;
-
-//   db.query(query, [valveID], (error, results) => {
-//       if (error) {
-//           console.error('Error retrieving flow rate:', error);
-//           return res.status(500).json({ error: 'Internal server error' });
-//       }
-//       console.log("Query Results:", results); // Debug line
-
-//       if (results.length === 0) {
-//           return res.status(404).json({ error: 'No flow rate found for this valve' });
-//       }
-
-//       res.json(results[0]); // Send the first result
-//   });
-// });
-
-
-
-
-// ......... till here 
 
 
 //pending from here agin for screen3
