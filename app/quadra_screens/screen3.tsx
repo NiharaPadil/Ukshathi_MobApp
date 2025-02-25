@@ -5,7 +5,7 @@
 
 import { View, Text, Pressable, Switch, FlatList, Modal,Alert, Platform , ActivityIndicator} from 'react-native';
 import { useRouter, useLocalSearchParams,useNavigation } from 'expo-router';
-// import DateTimePicker from '@react-native-community/datetimepicker';
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { Picker } from '@react-native-picker/picker'; // Import Picker for duration selection
 import React, { useEffect,useState } from 'react';
 import Constants from 'expo-constants';
@@ -42,12 +42,12 @@ export default function Screen3() {
 
   // Handle time selection from the time picker
   
-//   const onTimeChange = (event, selectedTime) => {
-//     if (event.type === "set" && selectedTime) {
-//       setWateringTime(selectedTime); // Update the selected time
-//     }
-//     setShowTimePicker(false); // Close the picker in all cases
-//   };
+  const onTimeChange = (event, selectedTime) => {
+    if (event.type === "set" && selectedTime) {
+      setWateringTime(selectedTime); // Update the selected time
+    }
+    setShowTimePicker(false); // Close the picker in all cases
+  };
 
 
 // Hide the default header provided by React Navigation
@@ -213,14 +213,15 @@ const fetchHistory = async () => {
   </Pressable>
 
   {/* Time Picker (Still Commented) */}
-  {/* {showTimePicker && (
-    <DateTimePicker
-      value={wateringTime}
-      mode="time"
-      display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-      onChange={onTimeChange}
-    />
-  )} */}
+{showTimePicker && (
+  <DateTimePicker
+    value={wateringTime}
+    mode="time"
+    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+    onChange={onTimeChange}
+  />
+)}
+
 </View>
 
 
