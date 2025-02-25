@@ -1,7 +1,8 @@
 //Screen3.tsx
 //refer screen3.txt before strting
 
-
+// changes made [as of 25th FEB] = Schedule watering duration is working [just frontend] use the below line to install the module
+//npx expo install @react-native-community/datetimepicker
 
 import { View, Text, Pressable, Switch, FlatList, Modal,Alert, Platform , ActivityIndicator} from 'react-native';
 import { useRouter, useLocalSearchParams,useNavigation } from 'expo-router';
