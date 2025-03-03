@@ -36,7 +36,7 @@ export default function Index() {
 
   const handleLogin = async () => { 
     if (!userEmail || !password) {
-      setErrorMessage('Please enter both username and password.');
+      setErrorMessage('Email and password are required');
       return;
     }
 
@@ -116,7 +116,7 @@ export default function Index() {
 
       {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
 
-      <TouchableOpacity onPress={handleLogin} style={styles.loginButton} disabled={isLoading}>
+      <TouchableOpacity testID="login-button" onPress={handleLogin} style={styles.loginButton} disabled={isLoading}>
         {isLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Login</Text>}
       </TouchableOpacity>
 
