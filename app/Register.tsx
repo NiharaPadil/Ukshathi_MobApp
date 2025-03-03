@@ -1,184 +1,3 @@
-
-
-// import React, { useState } from "react";
-// import { View, TextInput, Alert, Text, StyleSheet, Image, TouchableOpacity, ScrollView } from "react-native";
-// import Constants from 'expo-constants';
-// import { Picker } from '@react-native-picker/picker';
-
-// const Register = () => {
-//   const [name, setName] = useState<string>("");
-//   const [password, setPassword] = useState<string>("");
-//   const [email, setEmail] = useState<string>(""); 
-//   const [devices, setDevices] = useState<string[]>([""]); 
-//   const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL ?? '';
-
-//   const deviceOptions = ["Uno", "Quadra", "Hexa", "Octa"]; //device types
-
-//   const handleSignup = async () => {
-//     if (!name || !email || !password || devices.some(device => !device)) {
-//       Alert.alert("Error", "Please fill in all the fields.");
-//       return;
-//     }
-
-//     try {
-//       const response = await fetch(`${API_BASE_URL}/signup`, {
-//         method: "POST",
-//         headers: { "Content-Type": "application/json" },
-//         body: JSON.stringify({ name, email, password, device_types: devices }),
-//       });
-
-//       const data = await response.json();
-//       console.log("Response Data:", data);
-
-//       if (response.ok) {
-//         Alert.alert("Signup Successful", "Your account has been created.");
-//       } else {
-//         Alert.alert("Error", data.message || "Failed to sign up.");
-//       }
-//     } catch (error) {
-//       Alert.alert("Error", "Something went wrong. Please try again.");
-//     }
-//   };
-
-
-//   //for handling multple devices
-//   const handleAddDevice = () => {
-//     setDevices([...devices, ""]);
-//   };
-
-//   const handleRemoveDevice = (index: number) => {
-//     const updatedDevices = devices.filter((_, i) => i !== index);
-//     setDevices(updatedDevices);
-//   };
-
-//   const handleDeviceChange = (index: number, value: string) => {
-//     const updatedDevices = [...devices];
-//     updatedDevices[index] = value;
-//     setDevices(updatedDevices);
-//   };
-
-//   return (
-//     <View style={styles.container}>
-//       <Image source={require('../assets/images/logowithleaf.png')} style={styles.logoImage} />
-//       <Text style={styles.header}>Sign Up</Text>
-      
-//       <TextInput style={styles.input} placeholder="Name" value={name} onChangeText={setName} />
-//       <TextInput style={styles.input} placeholder="Email" value={email} onChangeText={setEmail} keyboardType="email-address" />
-//       <TextInput style={styles.input} placeholder="Password" secureTextEntry value={password} onChangeText={setPassword} />
-
-//       {devices.map((device, index) => (
-//         <View key={index} style={styles.deviceContainer}>
-//           <Text style={styles.deviceLabel}>Product Type {index + 1}</Text>
-//           <View style={styles.deviceRow}>
-//             <Picker
-//               selectedValue={device}
-//               style={styles.picker}
-//               onValueChange={(value) => handleDeviceChange(index, value)}
-//             >
-//               <Picker.Item label="Select Product Type" value="" />
-//               {deviceOptions.map((option, idx) => (
-//                 <Picker.Item key={idx} label={option} value={option} />
-//               ))}
-//             </Picker>
-//             {devices.length > 1 && (
-//               <TouchableOpacity onPress={() => handleRemoveDevice(index)} style={styles.deleteButton}>
-//                 <Text style={styles.deleteButtonText}>X</Text>
-//               </TouchableOpacity>
-//             )}
-//           </View>
-//         </View>
-//       ))}
-
-//       <TouchableOpacity onPress={handleAddDevice} style={styles.addDeviceButton}>
-//         <Text style={styles.buttonText}>Add Prouct</Text>
-//       </TouchableOpacity>
-
-//       <TouchableOpacity onPress={handleSignup} style={styles.SignInButton}>
-//         <Text style={styles.buttonText}>Register</Text>
-//       </TouchableOpacity>
-//     </View>
-//   );
-// };
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     top: -25,
-//     justifyContent: 'center',
-//     padding: 16,
-//     backgroundColor: '#f3f7ea',
-//   },
-//   logoImage: {
-//     width: '80%',
-//     height: '20%',
-//     alignSelf: 'center',
-//   },
-//   header: {
-//     fontSize: 30,
-//     textAlign: "center",
-//     marginBottom: 20,
-//     fontWeight: "bold",
-//   },
-//   input: {
-//     height: 50,
-//     borderColor: "#ddd",
-//     borderWidth: 1,
-//     marginBottom: 15,
-//     paddingLeft: 10,
-//     borderRadius: 5,
-//   },
-//   deviceContainer: {
-//     borderColor: "#ddd",
-//     borderWidth: 1,
-//     marginBottom: 15,
-//     padding: 10,
-//     borderRadius: 5,
-//   },
-//   deviceLabel: {
-//     fontSize: 16,
-//     fontWeight: "bold",
-//   },
-//   deviceRow: {
-//     flexDirection: "row",
-//     alignItems: "center",
-//   },
-//   picker: {
-//     flex: 1,
-//     height: 50,
-//   },
-//   deleteButton: {
-//     marginLeft: 10,
-//     backgroundColor: "#ff4d4d",
-//     padding: 10,
-//     borderRadius: 5,
-//   },
-//   deleteButtonText: {
-//     color: "#fff",
-//     fontWeight: "bold",
-//   },
-//   addDeviceButton: {
-//     backgroundColor: '#1e7218',
-//     padding: 10,
-//     borderRadius: 5,
-//     marginBottom: 10,
-//     width: '90%',
-//     alignSelf: 'center',
-//   },
-//   SignInButton: {
-//     backgroundColor: '#1e7218',
-//     padding: 15,
-//     borderRadius: 5,
-//     marginBottom: 10,
-//     width: '90%',
-//     alignSelf: 'center',
-//   },
-//   buttonText: {
-//     color: '#fff',
-//     textAlign: 'center',
-//     fontWeight: 'bold',
-//   },
-// });
-
 import React, { useState } from "react";
 import {
   View,
@@ -194,17 +13,51 @@ import Constants from "expo-constants";
 import { Picker } from "@react-native-picker/picker";
 
 const Register = () => {
-  const [name, setName] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [email, setEmail] = useState<string>("");
-  const [devices, setDevices] = useState<string[]>([""]);
-  const [controllers, setControllers] = useState<any[]>([]); // For Quadra devices
+  // State variables
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [address, setAddress] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
+  const [devices, setDevices] = useState([""]); // Array of device types
+
+  interface Controller {
+    id: string; // Manually provided ID
+    name: string;
+    deviceType: string;
+    nodes: {
+      id: string; // Manually provided ID
+      name: string;
+      batteryVoltage: string;
+      valves: {
+        id: string; // Manually provided ID
+        name: string;
+      }[];
+    }[];
+  }
+
+  const [controllers, setControllers] = useState<Controller[]>([]); // For Quadra devices
   const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL ?? "";
 
-  const deviceOptions = ["Uno", "Quadra", "Hexa", "Octa"]; // Device types
+  // Device options
+  const deviceOptions = ["Uno", "Quadra", "Hexa", "Octa"];
 
+  // Handle signup
   const handleSignup = async () => {
-    if (!name || !email || !password || devices.some((device) => !device)) {
+    if (
+      !firstName ||
+      !lastName ||
+      !email ||
+      !password ||
+      !phoneNumber ||
+      !address ||
+      !city ||
+      !state ||
+      devices.some((device) => !device)
+    ) {
       Alert.alert("Error", "Please fill in all the fields.");
       return;
     }
@@ -214,11 +67,16 @@ const Register = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name,
+          firstName,
+          lastName,
           email,
           password,
-          device_types: devices,
-          controllers, // Include controllers for Quadra devices
+          phoneNumber,
+          address,
+          city,
+          state,
+          devices,
+          controllers,
         }),
       });
 
@@ -235,16 +93,18 @@ const Register = () => {
     }
   };
 
-  // For handling multiple devices
+  // Handle adding a new device
   const handleAddDevice = () => {
     setDevices([...devices, ""]);
   };
 
+  // Handle removing a device
   const handleRemoveDevice = (index: number) => {
     const updatedDevices = devices.filter((_, i) => i !== index);
     setDevices(updatedDevices);
   };
 
+  // Handle device type change
   const handleDeviceChange = (index: number, value: string) => {
     const updatedDevices = [...devices];
     updatedDevices[index] = value;
@@ -252,94 +112,135 @@ const Register = () => {
 
     // If Quadra is selected, initialize controllers
     if (value === "Quadra") {
-      setControllers([{ name: "", nodes: [] }]);
+      setControllers([{ id: "", name: "", deviceType: "Quadra", nodes: [] }]);
     } else {
       setControllers([]);
     }
   };
 
-  // For handling Quadra device controllers
+  // Handle adding a new controller
   const handleAddController = () => {
-    setControllers([...controllers, { name: "", nodes: [] }]);
+    setControllers([...controllers, { id: "", name: "", deviceType: "Quadra", nodes: [] }]);
   };
 
+  // Handle removing a controller
   const handleRemoveController = (index: number) => {
     const updatedControllers = controllers.filter((_, i) => i !== index);
     setControllers(updatedControllers);
   };
 
+  // Handle controller ID change
+  const handleControllerIdChange = (index: number, value: string) => {
+    const updatedControllers = [...controllers];
+    updatedControllers[index].id = value;
+    setControllers(updatedControllers);
+  };
+
+  // Handle controller name change
   const handleControllerNameChange = (index: number, value: string) => {
     const updatedControllers = [...controllers];
     updatedControllers[index].name = value;
     setControllers(updatedControllers);
   };
 
+  // Handle adding a new node
   const handleAddNode = (controllerIndex: number) => {
     const updatedControllers = [...controllers];
-    updatedControllers[controllerIndex].nodes.push({ name: "", valves: [] });
+    updatedControllers[controllerIndex].nodes.push({
+      id: "", // Manually provided ID
+      name: "",
+      batteryVoltage: "",
+      valves: [],
+    });
     setControllers(updatedControllers);
   };
 
+  // Handle removing a node
   const handleRemoveNode = (controllerIndex: number, nodeIndex: number) => {
     const updatedControllers = [...controllers];
     updatedControllers[controllerIndex].nodes = updatedControllers[
       controllerIndex
-    ].nodes.filter((_: any, i: number) => i !== nodeIndex);
+    ].nodes.filter((_, i) => i !== nodeIndex);
     setControllers(updatedControllers);
   };
 
-  const handleNodeNameChange = (
-    controllerIndex: number,
-    nodeIndex: number,
-    value: string
-  ) => {
+  // Handle node ID change
+  const handleNodeIdChange = (controllerIndex: number, nodeIndex: number, value: string) => {
+    const updatedControllers = [...controllers];
+    updatedControllers[controllerIndex].nodes[nodeIndex].id = value;
+    setControllers(updatedControllers);
+  };
+
+  // Handle node name change
+  const handleNodeNameChange = (controllerIndex: number, nodeIndex: number, value: string) => {
     const updatedControllers = [...controllers];
     updatedControllers[controllerIndex].nodes[nodeIndex].name = value;
     setControllers(updatedControllers);
   };
 
-  const handleAddValve = (controllerIndex: number, nodeIndex: number) => {
+  // Handle battery voltage change
+  const handleBatteryVoltageChange = (controllerIndex: number, nodeIndex: number, value: string) => {
     const updatedControllers = [...controllers];
-    updatedControllers[controllerIndex].nodes[nodeIndex].valves.push("");
+    updatedControllers[controllerIndex].nodes[nodeIndex].batteryVoltage = value;
     setControllers(updatedControllers);
   };
 
-  const handleRemoveValve = (
-    controllerIndex: number,
-    nodeIndex: number,
-    valveIndex: number
-  ) => {
+  // Handle adding a new valve
+  const handleAddValve = (controllerIndex: number, nodeIndex: number) => {
+    const updatedControllers = [...controllers];
+    updatedControllers[controllerIndex].nodes[nodeIndex].valves.push({
+      id: "", // Manually provided ID
+      name: "",
+    });
+    setControllers(updatedControllers);
+  };
+
+  // Handle removing a valve
+  const handleRemoveValve = (controllerIndex: number, nodeIndex: number, valveIndex: number) => {
     const updatedControllers = [...controllers];
     updatedControllers[controllerIndex].nodes[nodeIndex].valves = updatedControllers[
       controllerIndex
-    ].nodes[nodeIndex].valves.filter((_: any, i: number) => i !== valveIndex);
+    ].nodes[nodeIndex].valves.filter((_, i) => i !== valveIndex);
     setControllers(updatedControllers);
   };
 
-  const handleValveNameChange = (
-    controllerIndex: number,
-    nodeIndex: number,
-    valveIndex: number,
-    value: string
-  ) => {
+  // Handle valve ID change
+  const handleValveIdChange = (controllerIndex: number, nodeIndex: number, valveIndex: number, value: string) => {
     const updatedControllers = [...controllers];
-    updatedControllers[controllerIndex].nodes[nodeIndex].valves[valveIndex] = value;
+    updatedControllers[controllerIndex].nodes[nodeIndex].valves[valveIndex].id = value;
+    setControllers(updatedControllers);
+  };
+
+  // Handle valve name change
+  const handleValveNameChange = (controllerIndex: number, nodeIndex: number, valveIndex: number, value: string) => {
+    const updatedControllers = [...controllers];
+    updatedControllers[controllerIndex].nodes[nodeIndex].valves[valveIndex].name = value;
     setControllers(updatedControllers);
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
+      {/* Logo */}
       <Image
         source={require("../assets/images/logowithleaf.png")}
         style={styles.logoImage}
       />
+
+      {/* Header */}
       <Text style={styles.header}>Sign Up</Text>
 
+      {/* Personal Information */}
       <TextInput
         style={styles.input}
-        placeholder="Name"
-        value={name}
-        onChangeText={setName}
+        placeholder="First Name"
+        value={firstName}
+        onChangeText={setFirstName}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Last Name"
+        value={lastName}
+        onChangeText={setLastName}
       />
       <TextInput
         style={styles.input}
@@ -355,7 +256,33 @@ const Register = () => {
         value={password}
         onChangeText={setPassword}
       />
+      <TextInput
+        style={styles.input}
+        placeholder="Phone Number"
+        value={phoneNumber}
+        onChangeText={setPhoneNumber}
+        keyboardType="phone-pad"
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Address"
+        value={address}
+        onChangeText={setAddress}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="City"
+        value={city}
+        onChangeText={setCity}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="State"
+        value={state}
+        onChangeText={setState}
+      />
 
+      {/* Device Configuration */}
       {devices.map((device, index) => (
         <View key={index} style={styles.deviceContainer}>
           <Text style={styles.deviceLabel}>Product Type {index + 1}</Text>
@@ -387,6 +314,14 @@ const Register = () => {
                 <View key={cIndex} style={styles.controllerContainer}>
                   <TextInput
                     style={styles.input}
+                    placeholder="Controller ID"
+                    value={controller.id}
+                    onChangeText={(value) =>
+                      handleControllerIdChange(cIndex, value)
+                    }
+                  />
+                  <TextInput
+                    style={styles.input}
                     placeholder="Controller Name"
                     value={controller.name}
                     onChangeText={(value) =>
@@ -400,8 +335,16 @@ const Register = () => {
                     <Text style={styles.deleteButtonText}>Remove Controller</Text>
                   </TouchableOpacity>
 
-                  {controller.nodes.map((node: any, nIndex: number) => (
+                  {controller.nodes.map((node, nIndex) => (
                     <View key={nIndex} style={styles.nodeContainer}>
+                      <TextInput
+                        style={styles.input}
+                        placeholder="Node ID"
+                        value={node.id}
+                        onChangeText={(value) =>
+                          handleNodeIdChange(cIndex, nIndex, value)
+                        }
+                      />
                       <TextInput
                         style={styles.input}
                         placeholder="Node Name"
@@ -410,6 +353,15 @@ const Register = () => {
                           handleNodeNameChange(cIndex, nIndex, value)
                         }
                       />
+                      <TextInput
+                        style={styles.input}
+                        placeholder="Battery Voltage"
+                        value={node.batteryVoltage}
+                        onChangeText={(value) =>
+                          handleBatteryVoltageChange(cIndex, nIndex, value)
+                        }
+                        keyboardType="numeric"
+                      />
                       <TouchableOpacity
                         onPress={() => handleRemoveNode(cIndex, nIndex)}
                         style={styles.deleteButton}
@@ -417,12 +369,20 @@ const Register = () => {
                         <Text style={styles.deleteButtonText}>Remove Node</Text>
                       </TouchableOpacity>
 
-                      {node.valves.map((valve: string, vIndex: number) => (
+                      {node.valves.map((valve, vIndex) => (
                         <View key={vIndex} style={styles.valveContainer}>
                           <TextInput
                             style={styles.input}
+                            placeholder="Valve ID"
+                            value={valve.id}
+                            onChangeText={(value) =>
+                              handleValveIdChange(cIndex, nIndex, vIndex, value)
+                            }
+                          />
+                          <TextInput
+                            style={styles.input}
                             placeholder={`Valve ${vIndex + 1} Name`}
-                            value={valve}
+                            value={valve.name}
                             onChangeText={(value) =>
                               handleValveNameChange(cIndex, nIndex, vIndex, value)
                             }
@@ -467,10 +427,12 @@ const Register = () => {
         </View>
       ))}
 
+      {/* Add Device Button */}
       <TouchableOpacity onPress={handleAddDevice} style={styles.addDeviceButton}>
         <Text style={styles.buttonText}>Add Product</Text>
       </TouchableOpacity>
 
+      {/* Register Button */}
       <TouchableOpacity onPress={handleSignup} style={styles.SignInButton}>
         <Text style={styles.buttonText}>Register</Text>
       </TouchableOpacity>
@@ -478,6 +440,7 @@ const Register = () => {
   );
 };
 
+// Styles
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,

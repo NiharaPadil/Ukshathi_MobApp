@@ -72,13 +72,17 @@ export default function Index() {
       //Alert.alert('Login Successful', `Welcome, ${username}!`);
 
       
-        router.replace('./Landing');
+        router.replace('/Landing');
       } else {
         throw new Error(data.message || 'Invalid credentials');
       }
     } catch (error: any) {
-      console.error('Login Error:', error);
-      setErrorMessage(error.message);
+      if (error instanceof Error) {
+        console.error('Login Error:', error.message);
+        setErrorMessage(error.message);
+      } else {
+        setErrorMessage('An unknown error occurred');
+      }
     } finally {
       setIsLoading(false);
     }

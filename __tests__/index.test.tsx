@@ -35,9 +35,12 @@ describe('Index Component', () => {
   });
 });
 
+
+//router is a problem , so created expo-router.js inside __mocks__ folder, but need to change package.json , workin on it...
+
 // import React from "react";
 // import { render, fireEvent, waitFor } from "@testing-library/react-native";
-// import Index from "../app/index";
+// import Index from "../app/index";  // Adjust path as needed
 // import AsyncStorage from "@react-native-async-storage/async-storage";
 // import { useNavigation } from "@react-navigation/native";
 
@@ -50,19 +53,47 @@ describe('Index Component', () => {
 // // Mock API request
 // global.fetch = jest.fn();
 
+// // Mock useNavigation
 // jest.mock("@react-navigation/native", () => ({
 //   useNavigation: jest.fn(),
 // }));
 
-// describe("Login Screen", () => {
+// describe("Index Component", () => {
+//   let mockNavigation: any;
+
 //   beforeEach(() => {
-//     jest.clearAllMocks(); // Reset all mocks before each test
+//     jest.clearAllMocks(); // Reset mocks before each test
+
+//     mockNavigation = { navigate: jest.fn() };
+//     (useNavigation as jest.Mock).mockReturnValue(mockNavigation);
 //   });
 
-//   it("shows an error when email and password are empty", async () => {
-//     const { getByText } = render(<Index />);
+//   it("renders login screen correctly", () => {
+//     const { getByPlaceholderText, getByTestId } = render(<Index />);
+    
+//     expect(getByPlaceholderText("Email")).toBeTruthy();
+//     expect(getByPlaceholderText("Password")).toBeTruthy();
+//     expect(getByTestId("login-button")).toBeTruthy(); // Ensure button exists
+//     expect(getByTestId("register-button")).toBeTruthy(); // Ensure Register button exists
+//   });
 
-//     fireEvent.press(getByText("Login"));
+//   it("allows user to input email and password", () => {
+//     const { getByPlaceholderText } = render(<Index />);
+    
+//     const emailInput = getByPlaceholderText("Email");
+//     const passwordInput = getByPlaceholderText("Password");
+
+//     fireEvent.changeText(emailInput, "test@example.com");
+//     fireEvent.changeText(passwordInput, "password123");
+
+//     expect(emailInput.props.value).toBe("test@example.com");
+//     expect(passwordInput.props.value).toBe("password123");
+//   });
+
+//   it("shows an error when trying to login without email or password", async () => {
+//     const { getByTestId, getByText } = render(<Index />);
+    
+//     fireEvent.press(getByTestId("login-button"));
 
 //     await waitFor(() => {
 //       expect(getByText("Email and password are required")).toBeTruthy();
@@ -74,11 +105,11 @@ describe('Index Component', () => {
 //       json: async () => ({ success: false, message: "Invalid credentials" }),
 //     });
 
-//     const { getByPlaceholderText, getByText } = render(<Index />);
+//     const { getByPlaceholderText, getByTestId, getByText } = render(<Index />);
 
-//     fireEvent.changeText(getByPlaceholderText("Enter email"), "test@example.com");
-//     fireEvent.changeText(getByPlaceholderText("Enter password"), "wrongpassword");
-//     fireEvent.press(getByText("Login"));
+//     fireEvent.changeText(getByPlaceholderText("Email"), "test@example.com");
+//     fireEvent.changeText(getByPlaceholderText("Password"), "wrongpassword");
+//     fireEvent.press(getByTestId("login-button"));
 
 //     await waitFor(() => {
 //       expect(getByText("Invalid credentials")).toBeTruthy();
@@ -90,24 +121,21 @@ describe('Index Component', () => {
 //       json: async () => ({ success: true, userID: "12345" }),
 //     });
 
-//     const { getByPlaceholderText, getByText } = render(<Index />);
+//     const { getByPlaceholderText, getByTestId } = render(<Index />);
 
-//     fireEvent.changeText(getByPlaceholderText("Enter email"), "test@example.com");
-//     fireEvent.changeText(getByPlaceholderText("Enter password"), "password123");
-//     fireEvent.press(getByText("Login"));
+//     fireEvent.changeText(getByPlaceholderText("Email"), "test@example.com");
+//     fireEvent.changeText(getByPlaceholderText("Password"), "password123");
+//     fireEvent.press(getByTestId("login-button"));
 
 //     await waitFor(() => {
 //       expect(AsyncStorage.setItem).toHaveBeenCalledWith("userID", "12345");
 //     });
 //   });
 
-//   it("navigates to Register page on button click", async () => {
-//     const mockNavigation = { navigate: jest.fn() };
-//     (useNavigation as jest.Mock).mockReturnValue(mockNavigation);
+//   it("navigates to Register page on button click", () => {
+//     const { getByTestId } = render(<Index />);
 
-//     const { getByText } = render(<Index />);
-
-//     fireEvent.press(getByText("Register"));
+//     fireEvent.press(getByTestId("register-button"));
 
 //     expect(mockNavigation.navigate).toHaveBeenCalledWith("Register");
 //   });
