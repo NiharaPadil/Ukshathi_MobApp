@@ -38,7 +38,7 @@ export default function LandingScreen() {
         console.log("Retrieved user_id:", storedUserId); //debugg point
 
         // Fetch user products from API
-              const response = await fetch(`${API_BASE_URL}/controller/${storedUserId}`);
+              const response = await fetch(`${API_BASE_URL}/device/controller/${storedUserId}`);
 
                const data = await response.json();
                console.log("User products:", data);
@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
   },
   item: {
     padding: 20,
-    backgroundColor: "#86C39A",
+    backgroundColor: "#71BC78",
     borderRadius: 12,
     width: 300,
     alignItems: "center",
@@ -188,16 +188,16 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#3C5A3A",
+    color: "000",
     fontFamily: "Montserrat",
   },
   disabledText: {
-    color: "#888",
+    color: "#818181",
   },
   desc: {
     marginTop: 5,
     fontSize: 14,
-    color: "#5B7C6B",
+    color: "000",
     lineHeight: 22,
     textAlign: "center",
   },
@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     paddingVertical: 5,
     paddingHorizontal: 10,
-    backgroundColor: "#70A98B",
+    backgroundColor: "#00693E",
     borderRadius: 5,
     flexDirection: "row",
     alignItems: "center",

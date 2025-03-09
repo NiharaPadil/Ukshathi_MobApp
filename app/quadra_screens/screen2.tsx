@@ -44,7 +44,7 @@ const [nodeId, setNodeId] = useState<string | null>(Array.isArray(params.id) ? p
     if (!nodeId) return; // Wait for nodeId before making API call
     const fetchValves = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/nodes/${nodeId}/valves`);
+        const response = await fetch(`${API_BASE_URL}/device/nodes/${nodeId}/valves`);
         if (!response.ok) {
           throw new Error('Failed to fetch valves');
         }
@@ -68,7 +68,7 @@ const [nodeId, setNodeId] = useState<string | null>(Array.isArray(params.id) ? p
 
     const fetchBatteryVoltage = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/battery/${nodeId}`);
+        const response = await fetch(`${API_BASE_URL}/realtime/battery/${nodeId}`);
         if (!response.ok) {
           throw new Error('Failed to fetch battery voltage');
         }
@@ -90,7 +90,7 @@ const [nodeId, setNodeId] = useState<string | null>(Array.isArray(params.id) ? p
     if (!nodeId) return;
     const fetchFlowRate = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/flowmeter/${nodeId}`);
+        const response = await fetch(`${API_BASE_URL}/realtime/flowmeter/${nodeId}`);
         if (!response.ok) {
           throw new Error('Failed to fetch flow rate');
         }

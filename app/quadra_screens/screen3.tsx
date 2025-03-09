@@ -43,7 +43,7 @@ export default function Screen3() {
 
   // Handle time selection from the time picker
   
-  const onTimeChange = (event, selectedTime) => {
+  const onTimeChange = (event: any, selectedTime: Date | undefined) => {
     if (event.type === "set" && selectedTime) {
       setWateringTime(selectedTime); // Update the selected time
     }
@@ -81,7 +81,7 @@ const handleLiveValveToggle = () => {
 //1) WATERING DURATION 1ST PART: function to send duration to be saved in db
 const sendDurationToBackend = async (selectedDuration: number) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/set-duration`, {
+    const response = await fetch(`${API_BASE_URL}/schedule/set-duration`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -116,7 +116,7 @@ const fetchLastSavedDuration = async () => {
       return;
     }
 
-    const response = await fetch(`${API_BASE_URL}/get-duration/${valveID}`);
+    const response = await fetch(`${API_BASE_URL}/schedule/get-duration/${valveID}`);
 
     if (!response.ok) {
       throw new Error(`Failed to fetch duration: ${response.status}`);
@@ -141,7 +141,7 @@ useEffect(() => {
 //3) HISTORY FUNCTION: to diaply history from db for particular node
 const fetchHistory = async () => {
   try {
-    const response = await fetch(`${API_BASE_URL}/get-history/${valveID}`);
+    const response = await fetch(`${API_BASE_URL}/history/get-history/${valveID}`);
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }

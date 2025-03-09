@@ -48,7 +48,7 @@ export default function Index() {
 
 
      // Attempting login with email and password
-      const response = await fetch(`${API_BASE_URL}/login`, {
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userEmail, passwordHash: password }),

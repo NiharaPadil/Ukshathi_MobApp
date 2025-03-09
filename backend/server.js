@@ -1,4 +1,57 @@
-// //serve.js
+//server.js
+
+const express = require("express");
+const mysql = require("mysql2");
+const cors = require("cors");
+require("dotenv").config();
+
+const app = express();
+app.use(cors({ origin: "*" }));
+app.use(express.json());
+
+// MySQL Connection
+const db = mysql.createPool({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
+});
+
+// Test Database Connection
+db.getConnection((err, connection) => {
+  if (err) {
+    console.error("Database connection failed:", err);
+  } else {
+    console.log("Connected to MySQL Database");
+    connection.release();
+  }
+});
+
+// Export the database connection for use in other files
+module.exports = db;
+
+// Import modularized route files
+const LoginSignup = require("./API/LoginSignup");
+const Devices = require("./API/ControllerNodeValve");
+const History = require("./API/History");
+const Schedule = require("./API/Schedule");
+const BatteryFlowmeter = require("./API/BatteryFlowmeter");
+
+// Use the routes
+app.use("/auth", LoginSignup);
+app.use("/device", Devices);
+app.use("/history", History);
+app.use("/schedule", Schedule);
+app.use("/realtime", BatteryFlowmeter);
+
+// Start Server
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Server running on port ${PORT}`);
+});
 
 // const express = require("express");
 // const router = express.Router();
@@ -144,68 +197,136 @@
 // });
 
 
-// //Register API
-//   // app.post("/signup", async (req, res) => {
-//   //   let { name, email, password, device_types, controllers } = req.body;
+// // Constants
+// const PEPPER = process.env.PEPPER;
 
-//   //   // Validate all fields
-//   //   if (!name || !email || !password || !device_types || device_types.length === 0) {
-//   //     return res.status(400).json({ message: "All fields are required." });
-//   //   }
+// // Helper function to hash password
+// const hashPassword = async (password) => {
+//   return await bcrypt.hash(password + PEPPER, 10);
+// };
 
-//   //   try {
-//   //     // Convert to string and trim inputs
-//   //     name = name.toString().trim();
-//   //     email = email.toString().trim();
-//   //     password = password.toString().trim();
-//   //     device_types = device_types.map((device) => device.toString().trim());
+// // Signup API
+// app.post("/signup", async (req, res) => {
+//   const {
+//     firstName,
+//     lastName,
+//     email,
+//     password,
+//     phoneNumber,
+//     address,
+//     city,
+//     state,
+//     devices,
+//     controllers,
+//   } = req.body;
 
-//   //     // Hash password with 10 salt rounds
-//   //     const hashedPassword = await bcrypt.hash(password, 10);
+//   // Validate required fields
+//   if (!firstName || !email || !password) {
+//     return res.status(400).json({ message: "First name, email, and password are required." });
+//   }
 
-//   //     // Insert user data into users table
-//   //     const sql = "INSERT INTO users (name, email, password) VALUES (?, ?, ?)";
-//   //     db.query(sql, [name, email, hashedPassword], (err, result) => {
-//   //       if (err) {
-//   //         console.error("Database Insert Error:", err);
-//   //         return res.status(500).json({ message: "Database error." });
-//   //       }
+//   try {
+//     // Hash password
+//     const hashedPassword = await hashPassword(password);
 
-//   //       // After user creation, insert device types into user_products table
-//   //       const userId = result.insertId; // Get the newly created user_id
+//     // Insert into userLogin
+//     const loginSql = "INSERT INTO userLogin (userEmail, passwordHash) VALUES (?, ?)";
+//     db.query(loginSql, [email, hashedPassword], (err, loginResult) => {
+//       if (err) {
+//         console.error("Database Error (userLogin):", err);
+//         return res.status(500).json({ message: "Error creating user." });
+//       }
 
-//   //       // Prepare device type insertions
-//   //       const deviceInsertQueries = device_types.map((device) => {
-//   //         return new Promise((resolve, reject) => {
-//   //           const deviceSql = "INSERT INTO user_products (user_id, product_name) VALUES (?, ?)";
-//   //           db.query(deviceSql, [userId, device], (err, deviceResult) => {
-//   //             if (err) {
-//   //               console.error("Device Insert Error:", err);
-//   //               reject(err);
-//   //             } else {
-//   //               resolve(deviceResult);
-//   //             }
-//   //           });
-//   //         });
-//   //       });
+//       const userId = loginResult.insertId;
 
-//   //       // Wait for all device types to be inserted
-//   //       Promise.all(deviceInsertQueries)
-//   //         .then(() => {
-//   //           res.status(201).json({ message: "User created successfully." });
-//   //         })
-//   //         .catch(() => {
-//   //           res.status(500).json({ message: "Error saving device types." });
-//   //         });
-//   //     });
-//   //   } catch (error) {
-//   //     console.error(error);
-//   //     res.status(500).json({ message: "Server error" });
-//   //   }
-//   // });
+//       // Insert into userData
+//       const userDataSql = `
+//         INSERT INTO userData 
+//           (userID, firstName, lastName, phoneNumber, userEmail, address, city, state)
+//         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+//       `;
+//       const userDataValues = [
+//         userId,
+//         firstName,
+//         lastName || null,
+//         phoneNumber || null,
+//         email,
+//         address || null,
+//         city || null,
+//         state || null,
+//       ];
 
+//       db.query(userDataSql, userDataValues, async (err) => {
+//         if (err) {
+//           console.error("Database Error (userData):", err);
+//           return res.status(500).json({ message: "Error saving user details." });
+//         }
 
-//  //Login API 
+//         // Insert Controllers, Nodes, and Valves
+//         if (controllers && controllers.length > 0) {
+//           try {
+//             for (const controller of controllers) {
+//               const controllerId = controller.id; // Use manually provided ID
+//               const controllerSql = `
+//                 INSERT INTO controller 
+//                   (controllerID, controllerName, userID, deviceType)
+//                 VALUES (?, ?, ?, ?)
+//               `;
+//               await db.promise().query(controllerSql, [
+//                 controllerId,
+//                 controller.name,
+//                 userId,
+//                 controller.deviceType,
+//               ]);
+
+//               // Insert Nodes
+//               for (const node of controller.nodes) {
+//                 const nodeId = node.id; // Use manually provided ID
+//                 const nodeSql = `
+//                   INSERT INTO node 
+//                     (nodeID, nodeName, batteryVoltage, controllerID)
+//                   VALUES (?, ?, ?, ?)
+//                 `;
+//                 await db.promise().query(nodeSql, [
+//                   nodeId,
+//                   node.name,
+//                   node.batteryVoltage,
+//                   controllerId,
+//                 ]);
+
+//                 // Insert Valves
+//                 for (const valve of node.valves) {
+//                   const valveId = valve.id; // Use manually provided ID
+//                   const valveSql = `
+//                     INSERT INTO valve 
+//                       (valveID, valveName, nodeID, controllerID, userID)
+//                     VALUES (?, ?, ?, ?, ?)
+//                   `;
+//                   await db.promise().query(valveSql, [
+//                     valveId,
+//                     valve.name,
+//                     nodeId,
+//                     controllerId,
+//                     userId,
+//                   ]);
+//                 }
+//               }
+//             }
+//             res.status(201).json({ message: "User and devices registered successfully." });
+//           } catch (error) {
+//             console.error("Device Registration Error:", error);
+//             res.status(500).json({ message: "Error saving devices." });
+//           }
+//         } else {
+//           res.status(201).json({ message: "User registered successfully." });
+//         }
+//       });
+//     });
+//   } catch (error) {
+//     console.error("Server Error:", error);
+//     res.status(500).json({ message: "Server error." });
+//   }
+// });
 
 // app.post('/login', async (req, res) => {
 //   let { userEmail, passwordHash } = req.body;
@@ -284,9 +405,10 @@
 //   }
 
 //   const query = `
-//         SELECT N.*
+//         SELECT N.*, U.firstName, U.lastName
 //         FROM Node N
 //         JOIN Controller C ON N.controllerID = C.controllerID
+//         JOIN userData U ON C.userID = U.userID
 //         WHERE C.userID = ?;
 //     `;
 
@@ -505,172 +627,43 @@
 
 
 
-const express = require("express");
-const mysql = require("mysql2");
-const bodyParser = require("body-parser");
-const cors = require("cors");
-const bcrypt = require("bcryptjs");
-const { v4: uuidv4 } = require("uuid");
-require("dotenv").config();
+// // const express = require("express");
+// // const mysql = require("mysql2");
+// // const bodyParser = require("body-parser");
+// // const cors = require("cors");
+// // const bcrypt = require("bcryptjs");
+// // const { v4: uuidv4 } = require("uuid");
+// // require("dotenv").config();
 
-const app = express();
-app.use(cors({ origin: "*" }));
-app.use(express.json());
+// // const app = express();
+// // app.use(cors({ origin: "*" }));
+// // app.use(express.json());
 
-// MySQL Connection
-const db = mysql.createPool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
-});
+// // // MySQL Connection
+// // const db = mysql.createPool({
+// //   host: process.env.DB_HOST,
+// //   user: process.env.DB_USER,
+// //   password: process.env.DB_PASSWORD,
+// //   database: process.env.DB_NAME,
+// //   waitForConnections: true,
+// //   connectionLimit: 10,
+// //   queueLimit: 0,
+// // });
 
-// Test Database Connection
-db.getConnection((err, connection) => {
-  if (err) {
-    console.error("Database connection failed:", err);
-  } else {
-    console.log("Connected to MySQL Database");
-    connection.release();
-  }
-});
+// // // Test Database Connection
+// // db.getConnection((err, connection) => {
+// //   if (err) {
+// //     console.error("Database connection failed:", err);
+// //   } else {
+// //     console.log("Connected to MySQL Database");
+// //     connection.release();
+// //   }
+// // });
 
-// Constants
-const PEPPER = process.env.PEPPER;
 
-// Helper function to hash password
-const hashPassword = async (password) => {
-  return await bcrypt.hash(password + PEPPER, 10);
-};
 
-// Signup API
-app.post("/signup", async (req, res) => {
-  const {
-    firstName,
-    lastName,
-    email,
-    password,
-    phoneNumber,
-    address,
-    city,
-    state,
-    devices,
-    controllers,
-  } = req.body;
-
-  // Validate required fields
-  if (!firstName || !email || !password) {
-    return res.status(400).json({ message: "First name, email, and password are required." });
-  }
-
-  try {
-    // Hash password
-    const hashedPassword = await hashPassword(password);
-
-    // Insert into userLogin
-    const loginSql = "INSERT INTO userLogin (userEmail, passwordHash) VALUES (?, ?)";
-    db.query(loginSql, [email, hashedPassword], (err, loginResult) => {
-      if (err) {
-        console.error("Database Error (userLogin):", err);
-        return res.status(500).json({ message: "Error creating user." });
-      }
-
-      const userId = loginResult.insertId;
-
-      // Insert into userData
-      const userDataSql = `
-        INSERT INTO userData 
-          (userID, firstName, lastName, phoneNumber, userEmail, address, city, state)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-      `;
-      const userDataValues = [
-        userId,
-        firstName,
-        lastName || null,
-        phoneNumber || null,
-        email,
-        address || null,
-        city || null,
-        state || null,
-      ];
-
-      db.query(userDataSql, userDataValues, async (err) => {
-        if (err) {
-          console.error("Database Error (userData):", err);
-          return res.status(500).json({ message: "Error saving user details." });
-        }
-
-        // Insert Controllers, Nodes, and Valves
-        if (controllers && controllers.length > 0) {
-          try {
-            for (const controller of controllers) {
-              const controllerId = controller.id; // Use manually provided ID
-              const controllerSql = `
-                INSERT INTO controller 
-                  (controllerID, controllerName, userID, deviceType)
-                VALUES (?, ?, ?, ?)
-              `;
-              await db.promise().query(controllerSql, [
-                controllerId,
-                controller.name,
-                userId,
-                controller.deviceType,
-              ]);
-
-              // Insert Nodes
-              for (const node of controller.nodes) {
-                const nodeId = node.id; // Use manually provided ID
-                const nodeSql = `
-                  INSERT INTO node 
-                    (nodeID, nodeName, batteryVoltage, controllerID)
-                  VALUES (?, ?, ?, ?)
-                `;
-                await db.promise().query(nodeSql, [
-                  nodeId,
-                  node.name,
-                  node.batteryVoltage,
-                  controllerId,
-                ]);
-
-                // Insert Valves
-                for (const valve of node.valves) {
-                  const valveId = valve.id; // Use manually provided ID
-                  const valveSql = `
-                    INSERT INTO valve 
-                      (valveID, valveName, nodeID, controllerID, userID)
-                    VALUES (?, ?, ?, ?, ?)
-                  `;
-                  await db.promise().query(valveSql, [
-                    valveId,
-                    valve.name,
-                    nodeId,
-                    controllerId,
-                    userId,
-                  ]);
-                }
-              }
-            }
-            res.status(201).json({ message: "User and devices registered successfully." });
-          } catch (error) {
-            console.error("Device Registration Error:", error);
-            res.status(500).json({ message: "Error saving devices." });
-          }
-        } else {
-          res.status(201).json({ message: "User registered successfully." });
-        }
-      });
-    });
-  } catch (error) {
-    console.error("Server Error:", error);
-    res.status(500).json({ message: "Server error." });
-  }
-});
-
-// Start Server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// // // Start Server
+// // const PORT = process.env.PORT || 5000;
+// // app.listen(PORT, "0.0.0.0", () => {
+// //   console.log(`Server running on port ${PORT}`);
+// // });

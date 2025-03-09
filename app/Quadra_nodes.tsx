@@ -44,7 +44,7 @@ export default function Screen1() {
   // Fetch nodes from API
   const fetchNodes = async (userID: string) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/nodes?userID=${userID}`);
+      const response = await fetch(`${API_BASE_URL}/device/nodes?userID=${userID}`);
       if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
       const data: NodeType[] = await response.json();
       setNodes(data);
