@@ -62,4 +62,33 @@ router.get('/flowmeter/:nodeID', async (req, res) => {
   }
 });
 
+
+// Endpoint to fetch battery health data for a specific node
+router.get('/batteryGraph/:nodeId', (req, res) => {
+    const { nodeId } = req.params;
+  
+    // Query the database for battery data related to the specified nodeId
+    db.query(
+      'SELECT dateTime, batteryVoltage FROM dummybatteryvolt WHERE nodeID = ? ORDER BY dateTime', //dummy query for dummy table since there is primary key issue
+
+    //   'SELECT dateTime, batteryVoltage FROM battery WHERE nodeID = ? ORDER BY dateTime', // Original query
+      [nodeId],
+      (error, results) => {
+        if (error) {
+          console.error('Database query error:', error);
+          return res.status(500).json({ error: 'Failed to fetch battery data' });
+        }
+  
+        // Format the batteryVoltage as a decimal (e.g., 300 -> 3.00)
+        const formattedResults = results.map((entry) => ({
+          dateTime: entry.dateTime,
+          batteryVoltage: (entry.batteryVoltage / 100).toFixed(2), // Convert to decimal
+        }));
+        // Send the fetched data as a JSON response
+        console.log("Battery data for node", nodeId, ":", formattedResults);
+        res.json(formattedResults);
+      }
+    );
+  });
+
 module.exports = router;

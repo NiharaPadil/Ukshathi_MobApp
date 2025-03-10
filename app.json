@@ -38,7 +38,7 @@
       "typedRoutes": true
     },
     "extra": {
-      "API_BASE_URL": "http://192.168.70.50:5000"
+      "API_BASE_URL": "http://192.168.75.50:5000"
     }
   }
 }

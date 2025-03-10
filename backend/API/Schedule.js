@@ -25,6 +25,7 @@ router.post("/set-duration", (req, res) => {
   });
 });
 
+
 // Get Watering Duration
 router.get('/get-duration/:valveID', async (req, res) => {
   try {
@@ -52,5 +53,52 @@ router.get('/get-duration/:valveID', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+
+// Set Schedule Watering Time 
+router.post('/set-schedule', (req, res) => {
+  const { valveID, startDate, duration, time, scheduleChange, onoff, weather } = req.body;
+
+  const query = `
+    INSERT INTO schedule (valveID, startDate, duration, time, scheduleChange, onoff, weather)
+    VALUES (?, ?, ?, ?, ?, ?, ?) AS new
+    ON DUPLICATE KEY UPDATE 
+      startDate = new.startDate,
+      duration = new.duration,
+      time = new.time,
+      scheduleChange = new.scheduleChange,
+      onoff = new.onoff,
+      weather = new.weather
+  `;
+
+  db.query(query, [valveID, startDate, duration, time, scheduleChange, onoff, weather], (err, result) => {
+    if (err) {
+      console.error('Error inserting/updating schedule:', err);
+      res.status(500).json({ message: 'Database error' });
+    } else {
+      res.json({ message: 'Schedule saved successfully' });
+    }
+  });
+});
+
+// Get Schedule Watering Time
+router.get('/get-schedule/:valveID', (req, res) => {
+  const { valveID } = req.params;
+
+  const query = `SELECT * FROM schedule WHERE valveID = ?`;
+
+  db.query(query, [valveID], (err, results) => {
+    if (err) {
+      console.error('Error fetching schedule:', err);
+      res.status(500).json({ message: 'Database error' });
+    } else if (results.length === 0) {
+      res.status(404).json({ message: 'No schedule found' });
+    } else {
+      console.log(results[0]);
+      res.json(results[0]); // Return the first matching result
+    }
+  });
+});
+
 
 module.exports = router;
