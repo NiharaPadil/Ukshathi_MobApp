@@ -7,6 +7,7 @@ import {
 import { router } from 'expo-router';
 import Constants from 'expo-constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Background from '../components_ad/Background'
 
 export default function Index() {
   const [userEmail, setUserEmail] = useState('');
@@ -89,6 +90,7 @@ export default function Index() {
   };
 
   return (
+    <Background>
     <View style={styles.container}>
       <Image source={require('../assets/images/logowithleaf.png')} style={styles.logoImage} /> 
       <Text style={styles.loginText}>Login</Text>
@@ -138,6 +140,7 @@ export default function Index() {
         </TouchableOpacity>
       </View>
     </View>
+    </Background>
   );
 }
 
@@ -147,7 +150,6 @@ const styles = StyleSheet.create({
     top: -25,
     justifyContent: 'center',
     padding: 16,
-    backgroundColor: '#f3f7ea',
   },
   logoImage: {
     width: '80%',

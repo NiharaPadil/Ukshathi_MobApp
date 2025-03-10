@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import Constants from "expo-constants";
 import { Picker } from "@react-native-picker/picker";
+import Background from "../components_ad/Background";
 
 const Register = () => {
   // State variables
@@ -219,6 +220,7 @@ const Register = () => {
   };
 
   return (
+    <Background>
     <ScrollView contentContainerStyle={styles.container}>
       {/* Logo */}
       <Image
@@ -425,6 +427,7 @@ const Register = () => {
             </View>
           )}
         </View>
+        
       ))}
 
       {/* Add Device Button */}
@@ -437,6 +440,7 @@ const Register = () => {
         <Text style={styles.buttonText}>Register</Text>
       </TouchableOpacity>
     </ScrollView>
+    </Background>
   );
 };
 
@@ -446,7 +450,6 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: "center",
     padding: 16,
-    backgroundColor: "#f3f7ea",
   },
   logoImage: {
     width: "80%",

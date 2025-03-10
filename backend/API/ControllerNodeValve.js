@@ -42,7 +42,7 @@ router.get('/nodes', (req, res) => {
       if (results.length === 0) {
           return res.status(404).json({ message: 'No nodes found for this userID' });
       }
-
+      console.log(results);
       res.json(results);
   });
 });

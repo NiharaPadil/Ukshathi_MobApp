@@ -3,6 +3,7 @@ import { View, Text, Pressable, StyleSheet, ScrollView, Image,Alert, Animated } 
 import { useRouter } from "expo-router";
 import Constants from 'expo-constants';
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Background from "../components_ad/Background";
 
 
 
@@ -72,19 +73,20 @@ export default function LandingScreen() {
  // Product details
   const items = [
     { name: "Uno", desc: "A single valve system for precise, Wifi/4G-enabled watering of up to 100 plants, all in a weatherproof IP65 design", 
-      route: "/Quadra_nodes", 
+      route: "/quadra_screens/screen1", 
       image: require("../assets/images/Uno.jpg") },
     { name: "Quadra", desc: "QUADRA revolutionizes large-scale irrigation with solar-powered nodes managing up to 4 valves, compatible with various methods, and featuring LoRa® technology for precise wireless control via Wi-Fi or 4G in a durable IP65 design.", 
-      route: "/Quadra_nodes", 
+      route: "/quadra_screens/screen1", 
       image: require("../assets/images/Quadra.jpg") },
     { name: "Hexa", desc: "A sleek hexagonal tank with smart scheduling, designed for balconies without taps, integrates with RO units and AC compressors, and offers Wi-Fi/4G connectivity in an IP65 weatherproof build.", 
-      route: "/Quadra_nodes", 
+      route: "/quadra_screens/screen1", 
       image: require("../assets/images/Hexa.jpg") },
     { name: "Octa", desc: "Manage up to 8 valves with precision scheduling, perfect for large outdoor spaces, and connect via Wi-Fi or 4G in a rugged, IP65 weatherproof design, ensuring your garden thrives effortlessly.",
-      route: "/Quadra_nodes", 
+      route: "/quadra_screens/screen1", 
        image: require("../assets/images/Octa.jpg") },
   ];
   return (
+    <Background>
     <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
       <View style={styles.container}>
         <View style={styles.titcontainer}>
@@ -124,6 +126,7 @@ export default function LandingScreen() {
         </View>
       </View>
     </ScrollView>
+    </Background>
   );
 }
 
@@ -137,7 +140,7 @@ const styles = StyleSheet.create({
   container: {
     width: "100%",
     alignItems: "center",
-    backgroundColor: "#F5F5F5",
+  
   },
   titcontainer: {
     flexDirection: "row",
