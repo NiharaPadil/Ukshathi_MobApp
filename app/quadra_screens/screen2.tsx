@@ -279,7 +279,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 25,
     textAlign: 'center',
-    marginTop: 30,
+    marginTop: 25,
   },
   svgCurve: {
     position: 'absolute',
@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
     left: -15,
   },
   Box: {
-    backgroundColor: '#F8FDE3',  // White button
+    backgroundColor: '#FDFFF2',  // White button
     padding: 20,
     marginVertical: 10,
     borderRadius: 25,

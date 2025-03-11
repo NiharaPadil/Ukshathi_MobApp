@@ -8,6 +8,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { Picker } from '@react-native-picker/picker';
 import Constants from 'expo-constants';
 import { Ionicons } from '@expo/vector-icons';
+import  WeatherComponent from '../../components_ad/WeatherInfo';
 
 const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL ?? '';
 
@@ -210,12 +211,14 @@ export default function Screen3() {
         <Text style={styles.headerText}>Valve Control System for {valveID}</Text>
 
         {/* Weather Info */}
-        <View style={styles.weatherInfo}>
+        {/* <View style={styles.weatherInfo}>
           <Text style={styles.weatherText}>Mangalore</Text>
           <Text style={styles.weatherText}>Temperature: 29.97°C | Weather: broken clouds</Text>
           <Text style={styles.weatherText}>Wind Speed: 6.3 m/s</Text>
+        </View> */}
+        <View style={styles.weatherInfo}>
+        <WeatherComponent/>
         </View>
-
 
 
         {/* Live Valve Status */}
@@ -365,14 +368,18 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     paddingVertical: 10,
     alignItems: 'center',
+    borderRadius: 18,
+    shadowColor: '#000',
     elevation: 4,
+    height: 220,
   },
   headerText: {
     fontSize: 22,
     fontWeight: 'bold',
   },
   weatherInfo: {
-    marginTop: 20,
+    padding:-100,
+    marginTop: -100,
     alignItems: 'center',
   },
   weatherText: {
@@ -505,7 +512,8 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   section: {
-    marginTop: 20,
+    marginTop: -110,
+    marginBottom: 120,
     width: '100%',
     alignItems: 'center',
   },
