@@ -7,7 +7,7 @@ import Svg, { Path } from 'react-native-svg';
 export default function WavyHeader({ customStyles }) {
     return (
       <View style={customStyles}>
-        <View style={{ backgroundColor: '#81a010', height: 40 ,paddingHorizontal: 120}}>
+        <View style={{ backgroundColor: '#81a010', height: 40 ,paddingHorizontal: 120,top: -15}}>
         
 
           <Svg

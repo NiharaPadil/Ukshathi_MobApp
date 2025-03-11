@@ -1,13 +1,17 @@
-//nodes screen with grouped controllers 
-import { View, Text, Pressable, Image, ActivityIndicator, StyleSheet,ImageBackground } from 'react-native';
+
+
+
+
+
+
+import { View, Text, Pressable, Image, ActivityIndicator, StyleSheet, Animated } from 'react-native';
 import { useRouter } from 'expo-router';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 import { Ionicons } from '@expo/vector-icons';
 import { globalStyles } from '../../style';
 import BackgroundImage from '../../components_ad/Background';
-
 
 const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL ?? '';
 
@@ -25,6 +29,32 @@ export default function Screen1() {
   const [nodes, setNodes] = useState<NodeType[]>([]); // State to store fetched nodes
   const [loading, setLoading] = useState(true); // Loading state
   const [userID, setUserID] = useState<string | null>(null); // Store userID
+
+  // Create an animated value for the wobble effect
+  const shakeAnim = useRef(new Animated.Value(0)).current;
+
+  // Start the wobble animation when the component mounts
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(shakeAnim, {
+          toValue: 35,
+          duration: 2000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(shakeAnim, {
+          toValue: -5,
+          duration: 2000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(shakeAnim, {
+          toValue: 0,
+          duration: 2000,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, []);
 
   // Fetch userID from AsyncStorage
   useEffect(() => {
@@ -77,48 +107,61 @@ export default function Screen1() {
 
   return (
     <BackgroundImage>
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerText}>Nodes</Text>
+      <View style={styles.container}>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.headerText}>Nodes</Text>
+        </View>
+
+        {/* User Info with Wobble Animation */}
+        <Animated.View
+  style={[
+    styles.userInfo,
+    {
+      transform: [
+        {
+          translateX: shakeAnim, // Apply shakeAnim to translateX for horizontal shake
+        },
+      ],
+    },
+  ]}
+>
+          <Text style={styles.userText}>
+            Hello <Text style={{ fontWeight: 'bold' }}>{firstName} {lastName}</Text> !
+          </Text>
+          <Image source={require('../../assets/images/Quadra.jpg')} style={styles.userImage} />
+        </Animated.View>
+
+        {/* Node List */}
+        <View style={styles.nodeList}>
+          {loading ? (
+            <ActivityIndicator size="large" color="#03A9F4" />
+          ) : (
+            Object.keys(groupedNodes).map((controllerID) => (
+              <View key={controllerID}>
+                {/* Show Controller ID as Section Header */}
+                <Text style={styles.controllerHeader}>Controller {controllerID}</Text>
+
+                {/* Display Nodes Under Each Controller */}
+                {groupedNodes[controllerID].map((node) => (
+                  <Pressable
+                    key={node.nodeID}
+                    style={globalStyles.Button}
+                    onPress={() => handleNodePress(node.nodeID)}
+                  >
+                    <Text style={globalStyles.Text}>{node.nodeName}</Text>
+                  </Pressable>
+                ))}
+              </View>
+            ))
+          )}
+        </View>
+
+        {/* Back Button */}
+        <Pressable style={styles.backButton} onPress={() => router.push('/')}>
+          <Ionicons name="arrow-back" size={40} color="#337a2c" />
+        </Pressable>
       </View>
-
-      {/* User Info */}
-      <View style={styles.userInfo}>
-        <Text style={styles.userText}>Hello <Text style={{ fontWeight: 'bold' }}>{firstName} {lastName}</Text> !</Text>
-        <Image source={require('../../assets/images/Quadra.jpg')} style={styles.userImage} />
-      </View>
-
-      {/* Node List */}
-      <View style={styles.nodeList}>
-        {loading ? (
-          <ActivityIndicator size="large" color="#03A9F4" />
-        ) : (
-          Object.keys(groupedNodes).map((controllerID) => (
-            <View key={controllerID}>
-              {/* Show Controller ID as Section Header */}
-              <Text style={styles.controllerHeader}>Controller {controllerID}</Text>
-
-              {/* Display Nodes Under Each Controller */}
-              {groupedNodes[controllerID].map((node) => (
-                <Pressable
-                  key={node.nodeID}
-                  style={globalStyles.Button}
-                  onPress={() => handleNodePress(node.nodeID)}
-                >
-                  <Text style={globalStyles.Text}>{node.nodeName}</Text>
-                </Pressable>
-              ))}
-            </View>
-          ))
-        )}
-      </View>
-
-      {/* Back Button */}
-      <Pressable style={styles.backButton} onPress={() => router.push('/')}>
-        <Ionicons name="arrow-back" size={40} color="#337a2c" />
-      </Pressable>
-    </View>
     </BackgroundImage>
   );
 }
@@ -162,7 +205,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     width: '100%',
     paddingHorizontal: 20,
-  }, 
+  },
   backButton: {
     position: 'absolute',
     bottom: 30,

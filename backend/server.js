@@ -6,7 +6,10 @@ const cors = require("cors");
 require("dotenv").config();
 
 const app = express();
-app.use(cors({ origin: "*" }));
+app.use(cors({
+  origin: '*', // Or '*' for development
+  methods: ['GET', 'POST', 'PUT']
+}));
 app.use(express.json());
 
 // MySQL Connection
@@ -40,6 +43,7 @@ const History = require("./API/History");
 const Schedule = require("./API/Schedule");
 const BatteryFlowmeter = require("./API/BatteryFlowmeter");
 const TapValve = require("./API/TapValve");
+const LiveTap = require("./API/LiveTap");
 
 // Use the routes
 app.use("/auth", LoginSignup);
@@ -48,6 +52,7 @@ app.use("/history", History);
 app.use("/schedule", Schedule);
 app.use("/realtime", BatteryFlowmeter);
 app.use("/tap", TapValve);
+app.use("/live", LiveTap);
 
 // Start Server
 const PORT = process.env.PORT || 5000;
