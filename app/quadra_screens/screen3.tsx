@@ -11,7 +11,8 @@ import { Ionicons } from '@expo/vector-icons';
 import WeatherComponent from '../../components_ad/WeatherInfo';
 import BackgroundImage from '../../components_ad/Background';
 
-const API_BASE_URL = 'http://192.168.1.37:5000'; // Replace with your backend URL
+const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL ?? '';
+
 
 type HistoryItem = {
   valveID: string | number;
