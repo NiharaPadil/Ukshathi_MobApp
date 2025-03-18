@@ -69,9 +69,9 @@ router.get('/batteryGraph/:nodeId', (req, res) => {
   
     // Query the database for battery data related to the specified nodeId
     db.query(
-      'SELECT dateTime, batteryVoltage FROM dummybatteryvolt WHERE nodeID = ? ORDER BY dateTime', //dummy query for dummy table since there is primary key issue
+     // 'SELECT dateTime, batteryVoltage FROM dummybatteryvolt WHERE nodeID = ? ORDER BY dateTime', //dummy query for dummy table since there is primary key issue
 
-    //   'SELECT dateTime, batteryVoltage FROM battery WHERE nodeID = ? ORDER BY dateTime', // Original query
+      'SELECT dateTime, batteryVoltage FROM battery WHERE nodeID = ? ORDER BY dateTime', // Original query
       [nodeId],
       (error, results) => {
         if (error) {

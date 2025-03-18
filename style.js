@@ -16,6 +16,7 @@ export const globalStyles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
   },
+
 });
 
 

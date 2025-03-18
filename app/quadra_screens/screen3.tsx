@@ -1,6 +1,3 @@
-// //controlls the valve and tap status
-// //also allows to set the watering time and duration
-
 import React, { useState, useEffect } from 'react';
 import { View, Text, Pressable, Switch, Modal, Alert, Platform, ActivityIndicator, StyleSheet } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -12,7 +9,6 @@ import WeatherComponent from '../../components_ad/WeatherInfo';
 import BackgroundImage from '../../components_ad/Background';
 
 const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL ?? '';
-
 
 type HistoryItem = {
   valveID: string | number;
@@ -35,59 +31,41 @@ export default function Screen3() {
   const [historyData, setHistoryData] = useState<HistoryItem[]>([]);
   const [showHistoryPopup, setShowHistoryPopup] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [dikStatus, setDikStatus] = useState<1 | 2 | 3 | null>(null);
+  
 
-  // Fetch initial valve status on component load
+  // Fetch initial data on component mount
   useEffect(() => {
-    const fetchValveStatus = async () => {
+    const fetchInitialData = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/live/valves/${valveID}`);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch valve status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        setLiveValveStatus(data.ManualOP === 1); // Assuming ManualOP 1 means ON, 0 means OFF
+        // await fetchValveStatus();
+        await fetchLastScheduledTime();
+        await fetchLastSavedDuration();
       } catch (error) {
-        console.error('Error fetching valve status:', error);
+        console.error('Error fetching initial data:', error);
       }
     };
 
-    fetchValveStatus();
-  }, [valveID]);
+    fetchInitialData();
+  }, []);
 
-  // Toggle live valve status
-  const handleLiveValveToggle = async () => {
-    setIsLoading(true);
-    setStatusMessage('Processing');
 
+  // Fetch last scheduled time
+  const fetchLastScheduledTime = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/live/valves/${valveID}/toggle`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`Server error: ${response.status}`);
-      }
-
+      const response = await fetch(`${API_BASE_URL}/schedule/get-schedule/${valveID}`);
+      if (!response.ok) throw new Error(`Failed to fetch schedule: ${response.status}`);
+      
       const data = await response.json();
-
-      // Update the live valve status based on the response
-      if (data.newState !== undefined) {
-        setLiveValveStatus(data.newState);
-        setStatusMessage('CMD Successful');
-        alert('Valve status updated successfully');
-      } else {
-        setStatusMessage('CMD Failed');
+      if (data.time) {
+        const [hours, minutes] = data.time.split(':');
+        const lastTime = new Date();
+        lastTime.setHours(parseInt(hours, 10));
+        lastTime.setMinutes(parseInt(minutes, 10));
+        setWateringTime(lastTime);
       }
     } catch (error) {
-      console.error('Error toggling valve status:', error);
-      setStatusMessage('CMD Failed');
-      alert('Failed to update valve status');
-    } finally {
-      setIsLoading(false);
+      console.error('Error fetching scheduled time:', error);
     }
   };
 
@@ -95,10 +73,8 @@ export default function Screen3() {
   const fetchLastSavedDuration = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/schedule/get-duration/${valveID}`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch duration: ${response.status}`);
-      }
-
+      if (!response.ok) throw new Error(`Failed to fetch duration: ${response.status}`);
+      
       const data = await response.json();
       if (data.duration !== undefined) {
         setDuration(data.duration);
@@ -107,6 +83,96 @@ export default function Screen3() {
       console.error('Error fetching duration:', error);
     }
   };
+
+
+  // Toggle live valve status
+const handleLiveValveToggle = async () => {
+  // 1. Optimistically update UI
+  setLiveValveStatus(prev => !prev);
+  setStatusMessage('Processing');
+
+  // 2. Send toggle request to backend
+  try {
+    await fetch(`${API_BASE_URL}/live/valves/${valveID}/toggle`, {
+      method: 'POST',
+    });
+  } catch (error) {
+    console.error('Toggle failed:', error);
+    // Revert UI if needed
+    setLiveValveStatus(prev => !prev);
+  }
+};
+// Poll DIK status every 2 seconds
+// In your polling useEffect
+useEffect(() => {
+  const interval = setInterval(async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/live/valves/${valveID}`);
+      const data = await response.json();
+      
+      // Handle case sensitivity for DIK value
+      const dik = data.DIK; // Important: Use uppercase DIK to match backend response
+
+      // Update status message
+      switch (Number(data.DIK)) {
+        case 1: 
+          setStatusMessage('Processing');
+          break;
+        case 2: 
+          setStatusMessage('CMD Successful');
+          break;
+        case 3: 
+          setStatusMessage('CMD Failed');
+          break;
+        default:
+          // Maintain current status if unexpected value
+          break;
+      }
+    } catch (error) {
+      console.error('Polling error:', error);
+    }
+  }, 2000);
+
+  return () => clearInterval(interval);
+}, []);
+
+
+
+useEffect(() => {
+  const fetchStatus = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/live/valves/${valveID}`);
+      if (!response.ok) throw new Error('HTTP error');
+      
+      const data = await response.json();
+      console.log('Polling response:', data); // Debugging line
+      
+      // Make sure we're using the correct case for DIK (backend uses uppercase)
+      switch (data.DIK) { // <-- Note uppercase DIK here
+        case 1: 
+          setStatusMessage('Processing');
+          break;
+        case 2: 
+          setStatusMessage('CMD Successful');
+          // Update the switch state if needed
+          setLiveValveStatus(data.ManualOP === 0);
+          break;
+        case 3: 
+          setStatusMessage('CMD Failed');
+          // Revert to previous state if command failed
+          setLiveValveStatus(prev => !prev);
+          break;
+        default:
+          console.warn('Unexpected DIK value:', data.DIK);
+      }
+    } catch (error) {
+      console.error('Polling error:', error);
+    }
+  };
+
+  const interval = setInterval(fetchStatus, 5000);
+  return () => clearInterval(interval);
+}, [valveID]); // Add valveID to dependencies
 
   // Fetch history
   const fetchHistory = async () => {
@@ -119,27 +185,6 @@ export default function Screen3() {
       setHistoryData(data);
     } catch (error) {
       console.error('Error fetching history:', error);
-    }
-  };
-
-  // Fetch last scheduled time
-  const fetchLastScheduledTime = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/schedule/get-schedule/${valveID}`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch last scheduled time: ${response.status}`);
-      }
-
-      const data = await response.json();
-      if (data.time) {
-        const [hours, minutes] = data.time.split(':');
-        const lastScheduledTime = new Date();
-        lastScheduledTime.setHours(parseInt(hours, 10));
-        lastScheduledTime.setMinutes(parseInt(minutes, 10));
-        setWateringTime(lastScheduledTime);
-      }
-    } catch (error) {
-      console.error('Error fetching last scheduled time:', error);
     }
   };
 
@@ -250,35 +295,28 @@ export default function Screen3() {
           </View>
         </View>
 
-        {/* Live Valve Status */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>LIVE VALVE STATUS:</Text>
-          {isLoading ? (
-            <ActivityIndicator size="small" color="#0000ff" />
-          ) : (
-            <Pressable
-              style={[
-                styles.button,
-                { backgroundColor: liveValveStatus ? '#f44336' : '#4CAF50' },
-              ]}
-              onPress={handleLiveValveToggle}
-            >
-              <Text style={styles.buttonText}>
-                {liveValveStatus ? 'OFF' : 'ON'}
-              </Text>
-            </Pressable>
-          )}
-          <Text
-            style={[
-              styles.statusMessage,
-              {
-                color: statusMessage === 'CMD Successful' ? 'green' : statusMessage === 'CMD Failed' ? 'red' : '#000',
-              },
-            ]}
-          >
-            {statusMessage}
-          </Text>
-        </View>
+       {/* Live Valve Status */}
+<View style={styles.section}>
+  <Text style={styles.sectionTitle}>LIVE VALVE STATUS:</Text>
+  <Pressable
+    style={[styles.button, { backgroundColor: liveValveStatus ? '#f44336' : '#4CAF50' }]}
+    onPress={handleLiveValveToggle}
+  >
+    <Text style={styles.buttonText}>
+      {liveValveStatus ? 'OFF' : 'ON'}
+    </Text>
+  </Pressable>
+  <Text style={[
+    styles.statusMessage,
+    { 
+      color: statusMessage === 'CMD Successful' ? '#4CAF50' :  // Green
+             statusMessage === 'CMD Failed' ? '#f44336' :     // Red
+             '#000' // Amber for Processing
+    }
+  ]}>
+    {statusMessage}
+  </Text>
+</View>
 
         {/* Tap Control */}
         <View style={styles.tapControlContainer}>
@@ -383,190 +421,189 @@ export default function Screen3() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    paddingTop: 15,
-    alignItems: 'center',
-  },
-  header: {
-    width: '100%',
-    backgroundColor: 'white',
-    paddingVertical: 30,
-    alignItems: 'center',
-    borderRadius: 18,
-    shadowColor: '#000',
-    elevation: 4,
-    height: 260,
-  },
-  headerText: {
-    fontSize: 22,
-    fontWeight: 'bold',
-  },
-  weatherInfo: {
-    padding: -100,
-    marginTop: -100,
-    alignItems: 'center',
-  },
-  controlSection: {
-    marginTop: 20,
-    width: '100%',
-    alignItems: 'center',
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  statusText: {
-    fontSize: 16,
-    color: '#333',
-    marginBottom: 8,
-  },
-  button: {
-    backgroundColor: '#809c13',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    width: 200,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  buttonText: {
-    fontSize: 16,
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  buttonSubText: {
-    fontSize: 12,
-    color: '#fff',
-    fontWeight: '600',
-    marginTop: 4,
-  },
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  modalContent: {
-    width: '80%',
-    backgroundColor: 'white',
-    borderRadius: 10,
-    padding: 20,
-    alignItems: 'center',
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  picker: {
-    width: '100%',
-    height: 200,
-  },
-  confirmButton: {
-    backgroundColor: '#809c13',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    marginTop: 20,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  confirmButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  historyButton: {
-    marginTop: 50,
-    backgroundColor: '#809c13',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    width: 200,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  historyButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  historyItem: {
-    backgroundColor: '#ddd',
-    padding: 10,
-    marginTop: 5,
-    borderRadius: 5,
-    width: '100%',
-    alignItems: 'center',
-  },
-  closeButton: {
-    backgroundColor: '#809c13',
-    padding: 10,
-    marginTop: 20,
-    borderRadius: 8,
-    width: 150,
-    alignItems: 'center',
-  },
-  closeButtonText: {
-    color: '#fff',
-    fontSize: 16,
-  },
-  backButton: {
-    position: 'absolute',
-    bottom: 30,
-    alignSelf: 'center',
-    padding: 10,
-  },
-  section: {
-    marginTop: -110,
-    marginBottom: 120,
-    width: '100%',
-    alignItems: 'center',
-  },
-  statusMessage: {
-    marginTop: 10,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  tapControlContainer: {
-    marginTop: -60,
-    width: 200,
-    backgroundColor: '#809c13',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  tapControlTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 8,
-  },
-  tapControlToggle: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 6,
-    width: '100%',
-    justifyContent: 'center',
-  },
-  tapControlText: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    marginRight: 10,
-  },
-});
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      padding: 20,
+      paddingTop: 15,
+      alignItems: 'center',
+    },
+    header: {
+      width: '100%',
+      backgroundColor: 'white',
+      paddingVertical: 30,
+      alignItems: 'center',
+      borderRadius: 18,
+      shadowColor: '#000',
+      elevation: 4,
+      height: 260,
+    },
+    headerText: {
+      fontSize: 22,
+      fontWeight: 'bold',
+    },
+    weatherInfo: {
+      padding: -100,
+      marginTop: -100,
+      alignItems: 'center',
+    },
+    controlSection: {
+      marginTop: 20,
+      width: '100%',
+      alignItems: 'center',
+    },
+    sectionTitle: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      marginBottom: 8,
+    },
+    statusText: {
+      fontSize: 16,
+      color: '#333',
+      marginBottom: 8,
+    },
+    button: {
+      backgroundColor: '#809c13',
+      paddingVertical: 12,
+      paddingHorizontal: 20,
+      borderRadius: 8,
+      width: 200,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    buttonText: {
+      fontSize: 16,
+      color: '#fff',
+      fontWeight: 'bold',
+    },
+    buttonSubText: {
+      fontSize: 12,
+      color: '#fff',
+      fontWeight: '600',
+      marginTop: 4,
+    },
+    modalContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
+    modalContent: {
+      width: '80%',
+      backgroundColor: 'white',
+      borderRadius: 10,
+      padding: 20,
+      alignItems: 'center',
+    },
+    modalTitle: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      marginBottom: 10,
+    },
+    picker: {
+      width: '100%',
+      height: 200,
+    },
+    confirmButton: {
+      backgroundColor: '#809c13',
+      paddingVertical: 12,
+      paddingHorizontal: 20,
+      marginTop: 20,
+      borderRadius: 8,
+      alignItems: 'center',
+    },
+    confirmButtonText: {
+      color: '#fff',
+      fontSize: 16,
+      fontWeight: 'bold',
+    },
+    historyButton: {
+      marginTop: 50,
+      backgroundColor: '#809c13',
+      paddingVertical: 12,
+      paddingHorizontal: 20,
+      borderRadius: 8,
+      width: 200,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    historyButtonText: {
+      color: '#fff',
+      fontSize: 16,
+      fontWeight: 'bold',
+    },
+    historyItem: {
+      backgroundColor: '#ddd',
+      padding: 10,
+      marginTop: 5,
+      borderRadius: 5,
+      width: '100%',
+      alignItems: 'center',
+    },
+    closeButton: {
+      backgroundColor: '#809c13',
+      padding: 10,
+      marginTop: 20,
+      borderRadius: 8,
+      width: 150,
+      alignItems: 'center',
+    },
+    closeButtonText: {
+      color: '#fff',
+      fontSize: 16,
+    },
+    backButton: {
+      position: 'absolute',
+      bottom: 30,
+      alignSelf: 'center',
+      padding: 10,
+    },
+    section: {
+      marginTop: -110,
+      marginBottom: 120,
+      width: '100%',
+      alignItems: 'center',
+    },
+    statusMessage: {
+      marginTop: 10,
+      fontSize: 14,
+      fontWeight: '600',
+    },
+    tapControlContainer: {
+      marginTop: -60,
+      width: 200,
+      backgroundColor: '#809c13',
+      paddingVertical: 12,
+      paddingHorizontal: 20,
+      borderRadius: 8,
+      alignItems: 'center',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 2,
+    },
+    tapControlTitle: {
+      fontSize: 16,
+      fontWeight: 'bold',
+      color: '#fff',
+      marginBottom: 8,
+    },
+    tapControlToggle: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: '#fff',
+      paddingVertical: 8,
+      paddingHorizontal: 12,
+      borderRadius: 6,
+      width: '100%',
+      justifyContent: 'center',
+    },
+    tapControlText: {
+      fontSize: 14,
+      fontWeight: 'bold',
+      marginRight: 10,
+    },
+  });
 
-
-
+ 
