@@ -66,6 +66,9 @@ export default function Layout() {
           <Pressable onPress={() => navigateTo('/ContactScreen')} style={styles.drawerItem}>
             <Text style={styles.text}>Contact</Text>
           </Pressable>
+          <Pressable onPress={() => navigateTo('/Queries')} style={styles.drawerItem}>
+            <Text style={styles.text}>Queries</Text>
+          </Pressable>
 
 
           {/* Social Media Icons */}

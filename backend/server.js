@@ -4,6 +4,7 @@ const express = require("express");
 const mysql = require("mysql2");
 const cors = require("cors");
 require("dotenv").config();
+const path = require('path'); // Add this line
 
 const app = express();
 app.use(cors({
@@ -44,6 +45,7 @@ const Schedule = require("./API/Schedule");
 const BatteryFlowmeter = require("./API/BatteryFlowmeter");
 const TapValve = require("./API/TapValve");
 const LiveTap = require("./API/LiveTap");
+const Queries = require("./API/Queries");
 
 // Use the routes
 app.use("/auth", LoginSignup);
@@ -53,6 +55,9 @@ app.use("/schedule", Schedule);
 app.use("/realtime", BatteryFlowmeter);
 app.use("/tap", TapValve);
 app.use("/live", LiveTap);
+app.use("/queries", Queries);
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 
 // Error handling middleware
 app.use((err, req, res, next) => {
