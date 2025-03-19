@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Pressable, Switch, Modal, Alert, Platform, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, Pressable, Switch, Modal, Alert, Platform, ActivityIndicator, StyleSheet,ScrollView } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Picker } from '@react-native-picker/picker';
@@ -30,8 +30,36 @@ export default function Screen3() {
   const [statusMessage, setStatusMessage] = useState('');
   const [historyData, setHistoryData] = useState<HistoryItem[]>([]);
   const [showHistoryPopup, setShowHistoryPopup] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [dikStatus, setDikStatus] = useState<1 | 2 | 3 | null>(null);
+  const [scheduleStatus, setScheduleStatus] = useState({
+    status: 'Updated', // 'Updated' or 'Error'
+    lastUpdated: new Date().toLocaleString(), // Timestamp
+  });
+
+  useEffect(() => {
+    const fetchScheduleStatus = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/schedule/schedule-status/${valveID}`);
+        const data = await response.json();
+        console.log('Schedule Status Response:', data); // Debug log
+  
+        // Update schedule status based on scheduleChange
+        setScheduleStatus(prev => {
+          if (prev.status === 'Updated' && data.scheduleChange === 1) {
+            return { status: 'Error, Restart device', lastUpdated: new Date().toLocaleString() };
+          } else if (prev.status === 'Error, Restart device' && data.scheduleChange === 0) {
+            return { status: 'Updated', lastUpdated: new Date().toLocaleString() };
+          }
+          return prev; // No change
+        });
+      } catch (error) {
+        console.error('Error fetching schedule status:', error);
+      }
+    };
+  
+    // Poll every 5 seconds
+    const interval = setInterval(fetchScheduleStatus, 5000);
+    return () => clearInterval(interval);
+  }, [valveID]);
   
 
   // Fetch initial data on component mount
@@ -86,56 +114,55 @@ export default function Screen3() {
 
 
   // Toggle live valve status
-const handleLiveValveToggle = async () => {
-  // 1. Optimistically update UI
-  setLiveValveStatus(prev => !prev);
-  setStatusMessage('Processing');
-
-  // 2. Send toggle request to backend
-  try {
-    await fetch(`${API_BASE_URL}/live/valves/${valveID}/toggle`, {
-      method: 'POST',
-    });
-  } catch (error) {
-    console.error('Toggle failed:', error);
-    // Revert UI if needed
+  const handleLiveValveToggle = async () => {
+    // Optimistically update UI
     setLiveValveStatus(prev => !prev);
-  }
-};
+    setStatusMessage('Processing');
+  
+    // Send toggle request to backend
+    try {
+      await fetch(`${API_BASE_URL}/live/valves/${valveID}/toggle`, {
+        method: 'POST',
+      });
+    } catch (error) {
+      console.error('Toggle failed:', error);
+      // Revert UI if needed
+      setLiveValveStatus(prev => !prev);
+    }
+  };
 // Poll DIK status every 2 seconds
 // In your polling useEffect
 useEffect(() => {
-  const interval = setInterval(async () => {
+  const fetchLiveValveStatus = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/live/valves/${valveID}`);
       const data = await response.json();
-      
-      // Handle case sensitivity for DIK value
-      const dik = data.DIK; // Important: Use uppercase DIK to match backend response
 
-      // Update status message
+      // Update live valve status based on DIK and ManualOP
       switch (Number(data.DIK)) {
-        case 1: 
+        case 1:
           setStatusMessage('Processing');
           break;
-        case 2: 
+        case 2:
           setStatusMessage('CMD Successful');
+          setLiveValveStatus(data.ManualOP === 0); // Update live valve status
           break;
-        case 3: 
+        case 3:
           setStatusMessage('CMD Failed');
+          setLiveValveStatus(prev => !prev); // Revert live valve status
           break;
         default:
-          // Maintain current status if unexpected value
-          break;
+          console.warn('Unexpected DIK value:', data.DIK);
       }
     } catch (error) {
-      console.error('Polling error:', error);
+      console.error('Error fetching live valve status:', error);
     }
-  }, 2000);
+  };
 
+  // Poll every 2 seconds
+  const interval = setInterval(fetchLiveValveStatus, 2000);
   return () => clearInterval(interval);
-}, []);
-
+}, [valveID]);
 
 
 useEffect(() => {
@@ -285,7 +312,9 @@ useEffect(() => {
   };
 
   return (
+    
     <BackgroundImage>
+      <ScrollView>
       <View style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
@@ -385,6 +414,23 @@ useEffect(() => {
           </Modal>
         </View>
 
+
+        {/* Status Indicator */}
+<View style={styles.statusContainer}>
+  <Text style={styles.statusLabel}>Schedule Status:</Text>
+  <View style={[
+    styles.statusIndicator,
+    scheduleStatus.status === 'Updated' ? styles.updated : styles.error
+  ]}>
+    <Text style={styles.statusText}>
+      {scheduleStatus.status}
+    </Text>
+  </View>
+  <Text style={styles.statusTime}>
+    Last updated: {scheduleStatus.lastUpdated}
+  </Text>
+</View>
+
         {/* History */}
         <Pressable style={styles.historyButton} onPress={() => { fetchHistory(); setShowHistoryPopup(true); }}>
           <Text style={styles.historyButtonText}>View History</Text>
@@ -417,7 +463,9 @@ useEffect(() => {
           <Ionicons name="arrow-back" size={40} color="#337a2c" />
         </Pressable>
       </View>
+      </ScrollView>
     </BackgroundImage>
+    
   );
 }
 
@@ -554,7 +602,7 @@ useEffect(() => {
     },
     backButton: {
       position: 'absolute',
-      bottom: 30,
+      bottom: 60,
       alignSelf: 'center',
       padding: 10,
     },
@@ -603,6 +651,40 @@ useEffect(() => {
       fontSize: 14,
       fontWeight: 'bold',
       marginRight: 10,
+    },
+    statusContainer: {
+      marginTop: 20,
+      padding: 15,
+      backgroundColor: '#fff',
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: '#E0E0E0',
+      
+    },
+    statusLabel: {
+      fontSize: 16,
+      color: '#666',
+      marginBottom: 8,
+    },
+    statusIndicator: {
+      padding: 10,
+      borderRadius: 8,
+      alignItems: 'center',
+    },
+    // statusText: {
+    //   color: 'white',
+    //   fontWeight: 'bold',
+    // },
+    statusTime: {
+      fontSize: 12,
+      color: '#999',
+      marginTop: 8,
+    },
+    updated: {
+      backgroundColor: '#4CAF50',
+    },
+    error: {
+      backgroundColor: '#f44336',
     },
   });
 

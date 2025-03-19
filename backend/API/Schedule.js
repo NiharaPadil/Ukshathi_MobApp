@@ -101,4 +101,48 @@ router.get('/get-schedule/:valveID', (req, res) => {
 });
 
 
+// get scheduleChange Status
+// router.get('/schedule-status/:valveID', async (req, res) => {
+//   try {
+//     const [rows] = await db.query(
+//       'SELECT scheduleChange FROM schedule WHERE valveID = ?',
+//       [req.params.valveID]
+//     );
+
+//     if (rows.length === 0) {
+//       return res.status(404).json({ error: 'Schedule not found' });
+//     }
+
+//     console.log('Schedule Status Query Result:', rows[0]); // Debug log
+//     res.json({ scheduleChange: rows[0].scheduleChange });
+//   } catch (error) {
+//     console.error('Database error:', error);
+//     res.status(500).json({ error: 'Failed to fetch schedule status' });
+//   }
+// });
+
+router.get('/schedule-status/:valveID', (req, res) => {
+  const valveID = req.params.valveID;
+
+  db.query(
+    'SELECT scheduleChange FROM schedule WHERE valveID = ?',
+    [valveID],
+    (err, results) => {
+      if (err) {
+        console.error('Database error:', err);
+        return res.status(500).json({ error: 'Failed to fetch schedule status' });
+      }
+
+      if (results.length === 0) {
+        return res.status(404).json({ error: 'Schedule not found' });
+      }
+
+      res.json({ scheduleChange: results[0].scheduleChange });
+    }
+  );
+});
+
+
+
+
 module.exports = router;

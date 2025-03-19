@@ -1,7 +1,7 @@
 
 const express = require('express');
 const cors = require('cors');
-const db = require('path');
+const db = require('../server');
 const app = express();
 
 app.use(cors());
