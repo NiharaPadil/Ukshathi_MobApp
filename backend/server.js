@@ -46,6 +46,7 @@ const BatteryFlowmeter = require("./API/BatteryFlowmeter");
 const TapValve = require("./API/TapValve");
 const LiveTap = require("./API/LiveTap");
 const Queries = require("./API/Queries");
+const Notifications = require("./API/Notifications");
 
 // Use the routes
 app.use("/auth", LoginSignup);
@@ -57,6 +58,7 @@ app.use("/tap", TapValve);
 app.use("/live", LiveTap);
 app.use("/queries", Queries);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use("/notifications", Notifications);
 
 
 // Error handling middleware

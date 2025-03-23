@@ -1,7 +1,8 @@
-
+//NotificationScreen.js 
 import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import Background from '.././components_ad/Background';
+import NotificationButton from '../components_ad/NotificationItem'; // Renamed import
 
 export default function NotificationsScreen() {
   const router = useRouter();
@@ -59,6 +60,13 @@ export default function NotificationsScreen() {
           <Text style={styles.timestamp}>{notification.timestamp}</Text>
         </Pressable>
       ))}
+
+      {/* Add the button at the bottom */}
+      <NotificationButton 
+        title="Enable Notifications"
+        style={{ marginTop: 20 }}
+      />
+      
     </ScrollView>
     </Background>
   );
@@ -139,3 +147,4 @@ const styles = StyleSheet.create({
     fontFamily: 'Montserrat',
   },
 });
+

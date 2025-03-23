@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "UTapp",
-    "slug": "UTapp",
+    "slug": "ukshathi",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -39,7 +39,15 @@
     },
     "extra": {
       "API_BASE_URL": "http://192.168.1.34:5000",
-       "API_KEY": "b0426aacb17e876e66782a808069b5fa"
-    }
+      "API_KEY": "b0426aacb17e876e66782a808069b5fa",
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "ed1c7715-aabf-4894-b0ce-ab956899905a"
+      }
+    },
+    "owner": "niharapadil"
   }
 }
+
