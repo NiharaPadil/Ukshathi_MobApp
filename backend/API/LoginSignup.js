@@ -91,9 +91,8 @@ router.post("/signup", async (req, res) => {
   }
 });
 
-// Login API
 router.post('/login', async (req, res) => {
-  let { userEmail, passwordHash } = req.body;
+  let { userEmail, passwordHash, expoToken } = req.body;
 
   if (!userEmail || !passwordHash) {
     return res.status(400).json({ success: false, message: 'All fields are required' });
@@ -115,6 +114,16 @@ router.post('/login', async (req, res) => {
     const isMatch = await bcrypt.compare(passwordHash + pepper, user.passwordHash);
 
     if (isMatch) {
+      // Step 1: Update the user's push token if provided
+      if (expoToken) {
+        await db.promise().query(`
+          UPDATE userLogin
+          SET expo_token = ?
+          WHERE userID = ?
+        `, [expoToken, user.userID]);
+      }
+
+      // Step 2: Return success response
       return res.json({
         success: true,
         message: 'Login successful',
