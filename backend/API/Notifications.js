@@ -40,6 +40,43 @@ router.post('/store-token', async (req, res) => {
 });
 
 
+// Schedule watering notification
+router.post('/schedule-notification', async (req, res) => {
+  try {
+    const { valveID, wateringTime } = req.body;
+    const userID = req.user.userID;
+    
+    // 1. Get user's token
+    const [user] = await db.query(
+      'SELECT expo_token FROM userLogin WHERE userID = ?',
+      [userID]
+    );
+    
+    if (!user.expo_token) {
+      return res.status(400).send('User has no notification token');
+    }
+    
+    // 2. Calculate notification time (5 mins before watering)
+    const notifyTime = new Date(wateringTime);
+    notifyTime.setMinutes(notifyTime.getMinutes() - 5);
+    
+    // 3. Store in database
+    await db.query(`
+      INSERT INTO scheduled_notifications 
+      (userID, valveID, notify_time)
+      VALUES (?, ?, ?)
+      ON DUPLICATE KEY UPDATE
+      notify_time = VALUES(notify_time)
+    `, [userID, valveID, notifyTime]);
+    
+    res.status(200).send('Notification scheduled');
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error scheduling notification');
+  }
+});
+
+
 router.post('/send-test', (req, res) => {
   const { userId } = req.body;
   const expo = new Expo();

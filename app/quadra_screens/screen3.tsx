@@ -7,6 +7,7 @@ import Constants from 'expo-constants';
 import { Ionicons } from '@expo/vector-icons';
 import WeatherComponent from '../../components_ad/WeatherInfo';
 import BackgroundImage from '../../components_ad/Background';
+import BackButton from '../../components_ad/BackButton';
 
 const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL ?? '';
 
@@ -34,13 +35,53 @@ export default function Screen3() {
     status: 'Updated', // 'Updated' or 'Error'
     lastUpdated: new Date().toLocaleString(), // Timestamp
   });
+  const [areButtonsDisabled, setAreButtonsDisabled] = useState(false);
 
+
+
+  // Disable buttons when watering is about to start or has started 
+  interface DisableRange {
+    startTime: Date;
+    endTime: Date;
+  }
+
+  const calculateDisableRange = (wateringTime: Date, duration: number): DisableRange => {
+    const startTime = new Date(wateringTime.getTime() - 5 * 60000); // 5 minutes before
+    const endTime = new Date(wateringTime.getTime() + (duration + 5) * 60000); // duration + 5 minutes after
+    return { startTime, endTime };
+  };
+
+  useEffect(() => {
+    const { startTime, endTime } = calculateDisableRange(wateringTime, duration);
+  
+    const checkTimeRange = () => {
+      const now = new Date();
+      if (now >= startTime && now <= endTime) {
+        setAreButtonsDisabled(true); // Disable buttons
+      } else {
+        setAreButtonsDisabled(false); // Enable buttons
+      }
+    };
+  
+    // Check immediately on mount
+    checkTimeRange();
+  
+    // Check every minute
+    const interval = setInterval(checkTimeRange, 60000);
+  
+    // Cleanup interval on unmount
+    return () => clearInterval(interval);
+  }, [wateringTime, duration]);
+
+
+
+//schedule
   useEffect(() => {
     const fetchScheduleStatus = async () => {
       try {
         const response = await fetch(`${API_BASE_URL}/schedule/schedule-status/${valveID}`);
         const data = await response.json();
-        console.log('Schedule Status Response:', data); // Debug log
+        // console.log('Schedule Status Response:', data); // Debug log
   
         // Update schedule status based on scheduleChange
         setScheduleStatus(prev => {
@@ -91,6 +132,7 @@ export default function Screen3() {
         lastTime.setHours(parseInt(hours, 10));
         lastTime.setMinutes(parseInt(minutes, 10));
         setWateringTime(lastTime);
+        console.log('Last scheduled time:', wateringTime);
       }
     } catch (error) {
       console.error('Error fetching scheduled time:', error);
@@ -106,6 +148,7 @@ export default function Screen3() {
       const data = await response.json();
       if (data.duration !== undefined) {
         setDuration(data.duration);
+        console.log('Last saved duration:', duration);
       }
     } catch (error) {
       console.error('Error fetching duration:', error);
@@ -172,7 +215,7 @@ useEffect(() => {
       if (!response.ok) throw new Error('HTTP error');
       
       const data = await response.json();
-      console.log('Polling response:', data); // Debugging line
+      // console.log('Polling response:', data); // Debugging line
       
       // Make sure we're using the correct case for DIK (backend uses uppercase)
       switch (data.DIK) { // <-- Note uppercase DIK here
@@ -249,6 +292,17 @@ useEffect(() => {
     if (selectedTime) {
       setWateringTime(selectedTime);
       setShowTimePicker(false);
+
+
+         // Schedule notification
+    await fetch(`${API_BASE_URL}/notifications/schedule-notification`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        valveID,
+        wateringTime: selectedTime.toISOString()
+      })
+    });
 
       const formattedTime = selectedTime.toLocaleTimeString('en-GB', { hour12: false });
       const startDate = new Date().toISOString().split('T')[0];
@@ -328,8 +382,9 @@ useEffect(() => {
 <View style={styles.section}>
   <Text style={styles.sectionTitle}>LIVE VALVE STATUS:</Text>
   <Pressable
-    style={[styles.button, { backgroundColor: liveValveStatus ? '#f44336' : '#4CAF50' }]}
+    style={[styles.button, { backgroundColor: liveValveStatus ? '#f44336' : '#4CAF50' }, areButtonsDisabled && styles.disabledButton]}
     onPress={handleLiveValveToggle}
+    disabled={areButtonsDisabled}
   >
     <Text style={styles.buttonText}>
       {liveValveStatus ? 'OFF' : 'ON'}
@@ -348,71 +403,132 @@ useEffect(() => {
 </View>
 
         {/* Tap Control */}
+<View style={[
+  styles.tapControlContainer,
+  areButtonsDisabled && styles.disabledContainer
+]}>
+  <Text style={[
+    styles.tapControlTitle,
+    areButtonsDisabled && styles.disabledText
+  ]}>
+    Tap Control
+  </Text>
+  <Text style={[
+    styles.statusText,
+    areButtonsDisabled && styles.disabledText
+  ]}>
+    Status: Tap is {isTapOn ? 'ON' : 'OFF'}
+  </Text>
+  <View style={styles.tapControlToggle}>
+    <Text style={[
+      styles.tapControlText,
+      areButtonsDisabled && styles.disabledText
+    ]}>
+      {isTapOn ? 'ON' : 'OFF'}
+    </Text>
+    <Switch 
+      value={isTapOn} 
+      onValueChange={areButtonsDisabled ? undefined : handleToggle}
+      disabled={areButtonsDisabled}
+      trackColor={{
+        false: areButtonsDisabled ? '#cccccc' : '#767577',
+        true: areButtonsDisabled ? '#a5d6a7' : '#81c784'
+      }}
+      thumbColor={isTapOn ? '#f5dd4b' : '#f4f3f4'}
+    />
+  </View>
+</View>
+
+
+
+
+        {/* Pump Control */}
         <View style={styles.tapControlContainer}>
-          <Text style={styles.tapControlTitle}>Tap Control</Text>
-          <Text style={styles.statusText}>Status: Tap is {isTapOn ? 'ON' : 'OFF'}</Text>
+          <Text style={styles.tapControlTitle}>Pump Control</Text>
+          <Text style={styles.statusText}>Status: Pump is {isTapOn ? 'ON' : 'OFF'}</Text>
           <View style={styles.tapControlToggle}>
             <Text style={styles.tapControlText}>{isTapOn ? 'ON' : 'OFF'}</Text>
-            <Switch value={isTapOn} onValueChange={handleToggle} />
+            {/* Pump logic later */}
+            <Switch />
           </View>
         </View>
 
-        {/* Water Schedule */}
-        <View style={styles.controlSection}>
-          <Text style={styles.sectionTitle}>Schedule Watering Time:</Text>
-          <Pressable style={styles.button} onPress={() => setShowTimePicker(true)}>
-            <Text style={styles.buttonText}>
-              {wateringTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-            </Text>
-            <Text style={styles.buttonSubText}>Edit Time</Text>
-          </Pressable>
-          {showTimePicker && (
-            <DateTimePicker
-              value={wateringTime}
-              mode="time"
-              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-              onChange={onTimeChange}
-            />
-          )}
-        </View>
+       {/* Water Time */}
+<View style={[styles.controlSection, { marginTop: -50 }]}>
+  <Text style={styles.sectionTitle}>Schedule Watering Time:</Text>
+  <Pressable 
+    style={[styles.button, areButtonsDisabled && styles.disabledButton]} 
+    onPress={areButtonsDisabled ? undefined : () => setShowTimePicker(true)}
+    disabled={areButtonsDisabled}
+  >
+    <Text style={[styles.buttonText, areButtonsDisabled && styles.disabledText]}>
+      {wateringTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+    </Text>
+    <Text style={[styles.buttonSubText, areButtonsDisabled && styles.disabledText]}>
+      Edit Time
+    </Text>
+  </Pressable>
+  {showTimePicker && !areButtonsDisabled && (
+    <DateTimePicker
+      value={wateringTime}
+      mode="time"
+      display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+      onChange={onTimeChange}
+    />
+  )}
+</View>
 
-        {/* Water Duration */}
-        <View style={styles.controlSection}>
-          <Text style={styles.sectionTitle}>Set Watering Duration:</Text>
-          <Pressable style={styles.button} onPress={() => setShowDurationPicker(true)}>
-            <Text style={styles.buttonText}>{duration} min</Text>
-          </Pressable>
-          <Modal visible={showDurationPicker} transparent={true} animationType="slide">
-            <View style={styles.modalContainer}>
-              <View style={styles.modalContent}>
-                <Text style={styles.modalTitle}>Select Watering Duration</Text>
-                <Picker
-                  selectedValue={duration}
-                  style={styles.picker}
-                  onValueChange={(itemValue) => setDuration(itemValue)}
-                >
-                  {[...Array(60).keys()].map((minute) => (
-                    <Picker.Item key={minute} label={`${minute + 1} min`} value={minute + 1} />
-                  ))}
-                </Picker>
-                <Pressable
-                  style={styles.confirmButton}
-                  onPress={async () => {
-                    try {
-                      await sendDurationToBackend(duration);
-                      Alert.alert('Success', 'Values saved successfully to DB');
-                      setShowDurationPicker(false);
-                    } catch (error) {
-                      Alert.alert('Error', 'Failed to save values to DB');
-                    }
-                  }}
-                >
-                  <Text style={styles.confirmButtonText}>Confirm</Text>
-                </Pressable>
-              </View>
-            </View>
-          </Modal>
-        </View>
+      {/* Water Duration */}
+<View style={styles.controlSection}>
+  <Text style={[styles.sectionTitle, areButtonsDisabled && styles.disabledText]}>
+    Set Watering Duration:
+  </Text>
+  <Pressable 
+    style={[styles.button, areButtonsDisabled && styles.disabledButton]} 
+    onPress={areButtonsDisabled ? undefined : () => setShowDurationPicker(true)}
+    disabled={areButtonsDisabled}
+  >
+    <Text style={[styles.buttonText, areButtonsDisabled && styles.disabledText]}>
+      {duration} min
+    </Text>
+  </Pressable>
+  <Modal 
+    visible={showDurationPicker && !areButtonsDisabled} 
+    transparent={true} 
+    animationType="slide"
+  >
+    <View style={styles.modalContainer}>
+      <View style={styles.modalContent}>
+        <Text style={styles.modalTitle}>Select Watering Duration</Text>
+        <Picker
+          selectedValue={duration}
+          style={styles.picker}
+          onValueChange={areButtonsDisabled ? undefined : (itemValue) => setDuration(itemValue)}
+          enabled={!areButtonsDisabled}
+        >
+          {[...Array(60).keys()].map((minute) => (
+            <Picker.Item key={minute} label={`${minute + 1} min`} value={minute + 1} />
+          ))}
+        </Picker>
+        <Pressable
+          style={[styles.confirmButton, areButtonsDisabled && styles.disabledButton]}
+          onPress={areButtonsDisabled ? undefined : async () => {
+            try {
+              await sendDurationToBackend(duration);
+              Alert.alert('Success', 'Values saved successfully to DB');
+              setShowDurationPicker(false);
+            } catch (error) {
+              Alert.alert('Error', 'Failed to save values to DB');
+            }
+          }}
+          disabled={areButtonsDisabled}
+        >
+          <Text style={styles.confirmButtonText}>Confirm</Text>
+        </Pressable>
+      </View>
+    </View>
+  </Modal>
+</View>
 
 
         {/* Status Indicator */}
@@ -459,9 +575,7 @@ useEffect(() => {
         </Modal>
 
         {/* Back Button */}
-        <Pressable style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={40} color="#337a2c" />
-        </Pressable>
+        <BackButton onPress={() => router.back()} />
       </View>
       </ScrollView>
     </BackgroundImage>
@@ -566,7 +680,7 @@ useEffect(() => {
       fontWeight: 'bold',
     },
     historyButton: {
-      marginTop: 50,
+      marginTop: 25,
       backgroundColor: '#809c13',
       paddingVertical: 12,
       paddingHorizontal: 20,
@@ -619,6 +733,7 @@ useEffect(() => {
     },
     tapControlContainer: {
       marginTop: -60,
+      marginBottom: 80,
       width: 200,
       backgroundColor: '#809c13',
       paddingVertical: 12,
@@ -671,10 +786,6 @@ useEffect(() => {
       borderRadius: 8,
       alignItems: 'center',
     },
-    // statusText: {
-    //   color: 'white',
-    //   fontWeight: 'bold',
-    // },
     statusTime: {
       fontSize: 12,
       color: '#999',
@@ -686,6 +797,92 @@ useEffect(() => {
     error: {
       backgroundColor: '#f44336',
     },
+    disabledButton: {
+      backgroundColor: '#ccc', // Grayed out
+    },
+    disabledContainer: {
+      opacity: 0.6,
+    },
+    disabledText: {
+      color: '#888',
+    }
   });
 
- 
+
+
+
+//Tried Componenting this ..some errors , will try again later
+
+// import React, { useState, useEffect } from 'react';
+// import { ScrollView, View, StyleSheet } from 'react-native';
+// import { useRouter, useLocalSearchParams } from 'expo-router';
+// import BackgroundImage from '../../components_ad/Background';
+// import BackButton from '../../components_ad/BackButton';
+// import Header from '../../components_ad/valve-control/Header';
+// import LiveValveStatus from '../../components_ad/valve-control/LiveValveStatus';
+// import TapControl from '../../components_ad/valve-control/TapControl';
+// import TimePicker from '../../components_ad/valve-control/TimePicker';
+// import DurationPicker from '../../components_ad/valve-control/DurationPicker';
+// import StatusIndicator from '../../components_ad/valve-control/StatusIndicator';
+// import HistoryButton from '../../components_ad/valve-control/HistoryButton';
+// import HistoryModal from '../../components_ad/valve-control/HistoryModal';
+
+// export default function Screen3() {
+//   const router = useRouter();
+//   const params = useLocalSearchParams();
+//   const valveID = Array.isArray(params.id) ? params.id[0] : params.id;
+
+//   const [isTapOn, setIsTapOn] = useState(false);
+//   const [wateringTime, setWateringTime] = useState(new Date());
+//   const [duration, setDuration] = useState(15);
+//   const [liveValveStatus, setLiveValveStatus] = useState(false);
+//   const [statusMessage, setStatusMessage] = useState('');
+//   const [historyData, setHistoryData] = useState([]);
+//   const [showHistoryPopup, setShowHistoryPopup] = useState(false);
+//   const [scheduleStatus, setScheduleStatus] = useState({
+//     status: 'Updated',
+//     lastUpdated: new Date().toLocaleString(),
+//   });
+
+//   // Add your API calls and logic here...
+
+//   return (
+//     <BackgroundImage>
+//       <ScrollView>
+//         <View style={styles.container}>
+//           <Header valveID={valveID} />
+//           <LiveValveStatus
+//             status={{ message: liveValveStatus ? 'OFF' : 'ON', color: liveValveStatus ? '#f44336' : '#4CAF50' }}
+//             onPress={() => setLiveValveStatus(!liveValveStatus)}
+//           />
+//           <TapControl isTapOn={isTapOn} onToggle={(value) => setIsTapOn(value)} />
+//           <TimePicker wateringTime={wateringTime} onTimeChange={(event, selectedTime) => {
+//             if (selectedTime) setWateringTime(selectedTime);
+//           }} />
+//           <DurationPicker duration={duration} onDurationChange={setDuration} />
+//           <StatusIndicator scheduleStatus={scheduleStatus} />
+//           <HistoryButton onPress={() => {
+//             // Fetch history and show modal
+//             setShowHistoryPopup(true);
+//           }} />
+//           <HistoryModal
+//             visible={showHistoryPopup}
+//             data={historyData}
+//             onClose={() => setShowHistoryPopup(false)}
+//           />
+//           <BackButton onPress={() => router.back()} />
+//         </View>
+//       </ScrollView>
+//     </BackgroundImage>
+//   );
+// }
+
+// const styles = StyleSheet.create({
+//   container: {
+//     flex: 1,
+//     padding: 20,
+//     paddingTop: 15,
+//     alignItems: 'center',
+//   },
+
+// }); 

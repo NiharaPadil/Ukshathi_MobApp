@@ -8,6 +8,7 @@ import WavyHeader from '../../components_ad/WavyHeader';
 import Background from "../../components_ad/Background";
 import BatteryHealthGraph from '../../components_ad/BatteryHealthGraph'; // Import the BatteryHealthGraph component
 import { LineChart } from "react-native-chart-kit"; // Import your graph library
+import BackButton from '../../components_ad/BackButton';
 
 const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL ?? '';
 
@@ -203,14 +204,20 @@ export default function Screen2() {
                 )}
               </View>
 
-              {/* Back Button */}
-              <Pressable style={styles.backButton} onPress={() => router.back()}>
-                <Ionicons name="arrow-back" size={40} color="#337a2c" />
-              </Pressable>
+              
             </View>
           )}
+
+          {/* Back Button */}
+          <View style={styles.backButtonContainer}>
+          <BackButton onPress={() => router.back() } />
         </View>
+
+
+        </View>
+        
       </View>
+      
     </Background>
   );
 }
@@ -273,6 +280,10 @@ const styles = StyleSheet.create({
     bottom: -100,
     alignSelf: 'center',
     padding: 10,
+  },
+  backButtonContainer: {
+    alignItems: 'center',
+    marginTop: 20,
   },
   nodetitle: {
     color: '#fff',

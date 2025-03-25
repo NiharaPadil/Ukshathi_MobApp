@@ -12,6 +12,7 @@ import Constants from 'expo-constants';
 import { Ionicons } from '@expo/vector-icons';
 import { globalStyles } from '../../style';
 import BackgroundImage from '../../components_ad/Background';
+import BackButton from '../../components_ad/BackButton';
 
 const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL ?? '';
 
@@ -157,10 +158,7 @@ export default function Screen1() {
           )}
         </View>
 
-        {/* Back Button */}
-        <Pressable style={styles.backButton} onPress={() => router.push('/')}>
-          <Ionicons name="arrow-back" size={40} color="#337a2c" />
-        </Pressable>
+        <BackButton onPress={() => router.back()} />
       </View>
     </BackgroundImage>
   );
