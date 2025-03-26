@@ -9,7 +9,20 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/LeafLogo1024.png",
+          "color": "#809c13", 
+          "androidMode": "default", 
+          "androidCollapsedTitle": "New watering reminder",
+          "iosAllowsForegroundNotifications": true
+        }
+      ]
+    ]
+
     },
     "android": {
       "adaptiveIcon": {

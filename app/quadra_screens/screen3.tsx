@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Pressable, Switch, Modal, Alert, Platform, ActivityIndicator, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, Pressable, Switch, Modal, Alert, Platform, ActivityIndicator, StyleSheet, ScrollView, AppState } from 'react-native';
+import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -9,6 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import WeatherComponent from '../../components_ad/WeatherInfo';
 import BackgroundImage from '../../components_ad/Background';
 import BackButton from '../../components_ad/BackButton';
+
 
 const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL ?? '';
 
@@ -51,6 +53,49 @@ export default function Screen3() {
     const endTime = new Date(wateringTime.getTime() + (duration + 5) * 60000); // duration + 5 minutes after
     return { startTime, endTime };
   };
+
+//   // Set up notification handler
+// useEffect(() => {
+//   Notifications.setNotificationHandler({
+//     handleNotification: async () => ({
+//       shouldShowAlert: true,
+//       shouldPlaySound: true,
+//       shouldSetBadge: true,
+//     }),
+//   });
+// }, []);
+
+  useEffect(() => {
+    // Configure notification handler
+    Notifications.setNotificationHandler({
+      handleNotification: async (notification) => {
+        if (AppState.currentState === 'active') {
+          Alert.alert(
+            notification.request.content.title ?? '',
+            notification.request.content.body ?? ''
+          );
+        }
+  
+        return {
+          shouldShowAlert: AppState.currentState !== 'active',
+          shouldPlaySound: true,
+          shouldSetBadge: true,
+        };
+      },
+    });
+
+    const subscription = Notifications.addNotificationReceivedListener(notification => {
+      if (AppState.currentState === 'active') {
+        Alert.alert(
+          notification.request.content.title ?? '',
+          notification.request.content.body ?? undefined
+        );
+      }
+    });
+  
+    return () => subscription.remove();
+  }, []); // Empty dependency array ensures this runs once on mount
+
 
   useEffect(() => {
     const { startTime, endTime } = calculateDisableRange(wateringTime, duration);
