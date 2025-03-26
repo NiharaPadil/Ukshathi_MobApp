@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Pressable, Switch, Modal, Alert, Platform, ActivityIndicator, StyleSheet,ScrollView } from 'react-native';
+import { View, Text, Pressable, Switch, Modal, Alert, Platform, ActivityIndicator, StyleSheet, ScrollView } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Picker } from '@react-native-picker/picker';
@@ -36,7 +37,7 @@ export default function Screen3() {
     lastUpdated: new Date().toLocaleString(), // Timestamp
   });
   const [areButtonsDisabled, setAreButtonsDisabled] = useState(false);
-
+ 
 
 
   // Disable buttons when watering is about to start or has started 
@@ -288,26 +289,90 @@ useEffect(() => {
   };
 
   // Handle time change
+  // const onTimeChange = async (event: any, selectedTime: Date | undefined) => {
+  //   if (selectedTime) {
+  //     setWateringTime(selectedTime);
+  //     setShowTimePicker(false);
+
+
+  //        // Schedule notification
+  //   await fetch(`${API_BASE_URL}/notifications/schedule-notification`, {
+  //     method: 'POST',
+  //     headers: { 'Content-Type': 'application/json' },
+  //     body: JSON.stringify({
+  //       valveID,
+  //       wateringTime: selectedTime.toISOString()
+  //       //UserId,
+  //     })
+  //   });
+
+  //     const formattedTime = selectedTime.toLocaleTimeString('en-GB', { hour12: false });
+  //     const startDate = new Date().toISOString().split('T')[0];
+
+  //     try {
+  //       const response = await fetch(`${API_BASE_URL}/schedule/set-schedule`, {
+  //         method: 'POST',
+  //         headers: {
+  //           'Content-Type': 'application/json',
+  //         },
+  //         body: JSON.stringify({
+  //           valveID,
+  //           startDate,
+  //           duration,
+  //           time: formattedTime,
+  //           scheduleChange: 1,
+  //           onoff: 1,
+  //           weather: 0,
+  //         }),
+  //       });
+
+  //       if (!response.ok) {
+  //         throw new Error(`Server error: ${response.status}`);
+  //       }
+
+  //       const data = await response.json();
+  //       console.log('Schedule saved:', data);
+  //       Alert.alert('Success', 'Schedule saved successfully');
+  //     } catch (error) {
+  //       console.error('Error saving schedule:', error);
+  //       Alert.alert('Error', 'Failed to save schedule');
+  //     }
+  //   }
+  // };
+
+
+
   const onTimeChange = async (event: any, selectedTime: Date | undefined) => {
     if (selectedTime) {
-      setWateringTime(selectedTime);
-      setShowTimePicker(false);
-
-
-         // Schedule notification
-    await fetch(`${API_BASE_URL}/notifications/schedule-notification`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        valveID,
-        wateringTime: selectedTime.toISOString()
-      })
-    });
-
-      const formattedTime = selectedTime.toLocaleTimeString('en-GB', { hour12: false });
-      const startDate = new Date().toISOString().split('T')[0];
-
       try {
+        setWateringTime(selectedTime);
+        setShowTimePicker(false);
+  
+        // Get stored userID from AsyncStorage
+        const storedUserID = await AsyncStorage.getItem('userID');
+        
+        if (!storedUserID) {
+          Alert.alert('Error', 'User not logged in');
+          return;
+        }
+  
+        // 1. Schedule Notification Request
+        await fetch(`${API_BASE_URL}/notifications/schedule-notification`, {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            valveID,
+            wateringTime: selectedTime.toISOString(),
+            userID: storedUserID // Send userID directly
+          })
+        });
+  
+        // 2. Schedule Set Request
+        const formattedTime = selectedTime.toLocaleTimeString('en-GB', { hour12: false });
+        const startDate = new Date().toISOString().split('T')[0];
+  
         const response = await fetch(`${API_BASE_URL}/schedule/set-schedule`, {
           method: 'POST',
           headers: {
@@ -321,18 +386,20 @@ useEffect(() => {
             scheduleChange: 1,
             onoff: 1,
             weather: 0,
+            userID: storedUserID // Send userID here too
           }),
         });
-
+  
         if (!response.ok) {
           throw new Error(`Server error: ${response.status}`);
         }
-
+  
         const data = await response.json();
         console.log('Schedule saved:', data);
         Alert.alert('Success', 'Schedule saved successfully');
+  
       } catch (error) {
-        console.error('Error saving schedule:', error);
+        console.error('Error:', error);
         Alert.alert('Error', 'Failed to save schedule');
       }
     }
