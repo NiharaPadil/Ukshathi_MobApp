@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Pressable, Switch, Modal, Alert, Platform, ActivityIndicator, StyleSheet, ScrollView, AppState } from 'react-native';
-import * as Notifications from 'expo-notifications';
+// import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Picker } from '@react-native-picker/picker';
 import Constants from 'expo-constants';
-import { Ionicons } from '@expo/vector-icons';
+// import { Ionicons } from '@expo/vector-icons';
 import WeatherComponent from '../../components_ad/WeatherInfo';
 import BackgroundImage from '../../components_ad/Background';
 import BackButton from '../../components_ad/BackButton';
@@ -65,36 +65,36 @@ export default function Screen3() {
 //   });
 // }, []);
 
-  useEffect(() => {
-    // Configure notification handler
-    Notifications.setNotificationHandler({
-      handleNotification: async (notification) => {
-        if (AppState.currentState === 'active') {
-          Alert.alert(
-            notification.request.content.title ?? '',
-            notification.request.content.body ?? ''
-          );
-        }
+  // useEffect(() => {
+  //   // Configure notification handler
+  //   Notifications.setNotificationHandler({
+  //     handleNotification: async (notification) => {
+  //       if (AppState.currentState === 'active') {
+  //         Alert.alert(
+  //           notification.request.content.title ?? '',
+  //           notification.request.content.body ?? ''
+  //         );
+  //       }
   
-        return {
-          shouldShowAlert: AppState.currentState !== 'active',
-          shouldPlaySound: true,
-          shouldSetBadge: true,
-        };
-      },
-    });
+  //       return {
+  //         shouldShowAlert: AppState.currentState !== 'active',
+  //         shouldPlaySound: true,
+  //         shouldSetBadge: true,
+  //       };
+  //     },
+  //   });
 
-    const subscription = Notifications.addNotificationReceivedListener(notification => {
-      if (AppState.currentState === 'active') {
-        Alert.alert(
-          notification.request.content.title ?? '',
-          notification.request.content.body ?? undefined
-        );
-      }
-    });
+  //   const subscription = Notifications.addNotificationReceivedListener(notification => {
+  //     if (AppState.currentState === 'active') {
+  //       Alert.alert(
+  //         notification.request.content.title ?? '',
+  //         notification.request.content.body ?? undefined
+  //       );
+  //     }
+  //   });
   
-    return () => subscription.remove();
-  }, []); // Empty dependency array ensures this runs once on mount
+  //   return () => subscription.remove();
+  // }, []); // Empty dependency array ensures this runs once on mount
 
 
   useEffect(() => {
