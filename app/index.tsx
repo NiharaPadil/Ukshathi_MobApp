@@ -1,9 +1,4 @@
 
-
-
-
-
-
 import React, { useState, useEffect } from 'react';
 import { 
   View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image, ActivityIndicator 
@@ -11,7 +6,7 @@ import {
 import { router } from 'expo-router';
 import Constants from 'expo-constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-// import * as Notifications from 'expo-notifications'; // Add this import
+// import * as Notifications from 'expo-notifications'; // am not using this , switching to firebase notification 
 import Background from '../components_ad/Background'
 
 export default function Index() {
@@ -21,10 +16,11 @@ export default function Index() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   
-  const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL ?? '';
-
+   // !!!!!!!! Make sure to set this in your app.json (your ip adress) otherwise your backend will not work 
+  const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL ?? '';    
+ 
+  //if the user is logged in, will redirect them to the landing page
   useEffect(() => {
-    // Load stored user ID on mount (optional: if needed for auto-login later)
     const checkUserSession = async () => {
       try {
         const storedUserId = await AsyncStorage.getItem('userID');
@@ -40,6 +36,10 @@ export default function Index() {
     checkUserSession();
   }, []);
 
+
+
+  //handle login function ,this function will be called when the user clicks the login button,it will send a post request to the backend with the user email and password
+  //if the login is successful, it will store the user id in async storage and redirect to the landing page
   const handleLogin = async () => { 
     if (!userEmail || !password) {
       setErrorMessage('Email and password are required');
@@ -52,24 +52,13 @@ export default function Index() {
     try {
       console.log('Attempting login with', { userEmail, password }); //debug point
 
-      // // Step 1: Request notification permissions
-      // const { status } = await Notifications.requestPermissionsAsync();
-      // if (status !== 'granted') {
-      //   throw new Error('Notification permission denied');
-      // }
-
-      // Step 2: Get push token
-      // const token = (await Notifications.getExpoPushTokenAsync()).data;
-      // console.log('Push token:', token); //debug point
-
-      // Step 3: Attempt login with email, password, and push token
+      // Attempt login with email, password, and push token
       const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           userEmail, 
           passwordHash: password,
-          // expoToken: token, // Include the push token
         }),
       });
 
@@ -82,8 +71,8 @@ export default function Index() {
         }
 
         // Store user ID in AsyncStorage
-        await AsyncStorage.setItem('userID', data.userID.toString());
-        console.log('User ID stored:', data.userID);
+        await AsyncStorage.setItem('userID', data.userID.toString());// Store user ID in AsyncStorage
+        console.log('User ID stored:', data.userID);//debug point
 
         // Redirect to landing page
         router.replace('/Landing');

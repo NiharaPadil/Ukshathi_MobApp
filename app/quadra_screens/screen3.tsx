@@ -1,25 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Pressable, Switch, Modal, Alert, Platform, ActivityIndicator, StyleSheet, ScrollView, AppState } from 'react-native';
-// import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Picker } from '@react-native-picker/picker';
 import Constants from 'expo-constants';
-// import { Ionicons } from '@expo/vector-icons';
-import WeatherComponent from '../../components_ad/WeatherInfo';
-import BackgroundImage from '../../components_ad/Background';
-import BackButton from '../../components_ad/BackButton';
+import WeatherComponent from '../../components_ad/WeatherInfo';// import WeatherComponent from your weather component path
+import BackgroundImage from '../../components_ad/Background';// import BackgroundImage from your background image component path
+import BackButton from '../../components_ad/BackButton';  // import BackButton from your back button component path
 
 
 const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL ?? '';
 
-type HistoryItem = {
-  valveID: string | number;
-  wateredDateTime: string;
-  wateredDuration: string | null;
-  waterVolume: string | null;
-};
 
 export default function Screen3() {
   const router = useRouter();
@@ -41,6 +33,96 @@ export default function Screen3() {
   const [areButtonsDisabled, setAreButtonsDisabled] = useState(false);
  
 
+  // Toggle live valve status
+  const handleLiveValveToggle = async () => {
+    // Optimistically update UI
+    setLiveValveStatus(prev => !prev);
+    setStatusMessage('Processing');
+  
+    // Send toggle request to backend
+    try {
+      await fetch(`${API_BASE_URL}/live/valves/${valveID}/toggle`, {
+        method: 'POST',
+      });
+    } catch (error) {
+      console.error('Toggle failed:', error);
+      // Revert UI if needed
+      setLiveValveStatus(prev => !prev);
+    }
+  };
+
+
+// Poll DIK status every 2 seconds
+// In your polling useEffect
+useEffect(() => {
+  const fetchLiveValveStatus = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/live/valves/${valveID}`);
+      const data = await response.json();
+
+      // Update live valve status based on DIK and ManualOP
+      switch (Number(data.DIK)) {
+        case 1:
+          setStatusMessage('Processing');
+          break;
+        case 2:
+          setStatusMessage('CMD Successful');
+          setLiveValveStatus(data.ManualOP === 0); // Update live valve status
+          break;
+        case 3:
+          setStatusMessage('CMD Failed');
+          setLiveValveStatus(prev => !prev); // Revert live valve status
+          break;
+        default:
+          console.warn('Unexpected DIK value:', data.DIK);
+      }
+    } catch (error) {
+      console.error('Error fetching live valve status:', error);
+    }
+  };
+
+  // Poll every 2 seconds
+  const interval = setInterval(fetchLiveValveStatus, 2000);
+  return () => clearInterval(interval);
+}, [valveID]);
+
+
+//fetch valve status 
+useEffect(() => {
+  const fetchStatus = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/live/valves/${valveID}`);
+      if (!response.ok) throw new Error('HTTP error');
+      
+      const data = await response.json();
+      // console.log('Polling response:', data); // Debugging line
+      
+      // Make sure we're using the correct case for DIK (backend uses uppercase)
+      switch (data.DIK) { // <-- Note uppercase DIK here
+        case 1: 
+          setStatusMessage('Processing');
+          break;
+        case 2: 
+          setStatusMessage('CMD Successful');
+          // Update the switch state if needed
+          setLiveValveStatus(data.ManualOP === 0);
+          break;
+        case 3: 
+          setStatusMessage('CMD Failed');
+          // Revert to previous state if command failed
+          setLiveValveStatus(prev => !prev);
+          break;
+        default:
+          console.warn('Unexpected DIK value:', data.DIK);
+      }
+    } catch (error) {
+      console.error('Polling error:', error);
+    }
+  };
+
+  const interval = setInterval(fetchStatus, 5000);
+  return () => clearInterval(interval);
+}, [valveID]); // Add valveID to dependencies
 
   // Disable buttons when watering is about to start or has started 
   interface DisableRange {
@@ -48,53 +130,12 @@ export default function Screen3() {
     endTime: Date;
   }
 
-  const calculateDisableRange = (wateringTime: Date, duration: number): DisableRange => {
+   // Calculate the disable range based on watering time and duration
+   const calculateDisableRange = (wateringTime: Date, duration: number): DisableRange => {
     const startTime = new Date(wateringTime.getTime() - 5 * 60000); // 5 minutes before
     const endTime = new Date(wateringTime.getTime() + (duration + 5) * 60000); // duration + 5 minutes after
     return { startTime, endTime };
   };
-
-//   // Set up notification handler
-// useEffect(() => {
-//   Notifications.setNotificationHandler({
-//     handleNotification: async () => ({
-//       shouldShowAlert: true,
-//       shouldPlaySound: true,
-//       shouldSetBadge: true,
-//     }),
-//   });
-// }, []);
-
-  // useEffect(() => {
-  //   // Configure notification handler
-  //   Notifications.setNotificationHandler({
-  //     handleNotification: async (notification) => {
-  //       if (AppState.currentState === 'active') {
-  //         Alert.alert(
-  //           notification.request.content.title ?? '',
-  //           notification.request.content.body ?? ''
-  //         );
-  //       }
-  
-  //       return {
-  //         shouldShowAlert: AppState.currentState !== 'active',
-  //         shouldPlaySound: true,
-  //         shouldSetBadge: true,
-  //       };
-  //     },
-  //   });
-
-  //   const subscription = Notifications.addNotificationReceivedListener(notification => {
-  //     if (AppState.currentState === 'active') {
-  //       Alert.alert(
-  //         notification.request.content.title ?? '',
-  //         notification.request.content.body ?? undefined
-  //       );
-  //     }
-  //   });
-  
-  //   return () => subscription.remove();
-  // }, []); // Empty dependency array ensures this runs once on mount
 
 
   useEffect(() => {
@@ -120,8 +161,7 @@ export default function Screen3() {
   }, [wateringTime, duration]);
 
 
-
-//schedule
+// Poll schedule status every 5 seconds
   useEffect(() => {
     const fetchScheduleStatus = async () => {
       try {
@@ -202,93 +242,18 @@ export default function Screen3() {
   };
 
 
-  // Toggle live valve status
-  const handleLiveValveToggle = async () => {
-    // Optimistically update UI
-    setLiveValveStatus(prev => !prev);
-    setStatusMessage('Processing');
-  
-    // Send toggle request to backend
-    try {
-      await fetch(`${API_BASE_URL}/live/valves/${valveID}/toggle`, {
-        method: 'POST',
-      });
-    } catch (error) {
-      console.error('Toggle failed:', error);
-      // Revert UI if needed
-      setLiveValveStatus(prev => !prev);
-    }
+
+
+
+
+
+  // History item type
+  type HistoryItem = {
+    valveID: string | number;
+    wateredDateTime: string;
+    wateredDuration: string | null;
+    waterVolume: string | null;
   };
-// Poll DIK status every 2 seconds
-// In your polling useEffect
-useEffect(() => {
-  const fetchLiveValveStatus = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/live/valves/${valveID}`);
-      const data = await response.json();
-
-      // Update live valve status based on DIK and ManualOP
-      switch (Number(data.DIK)) {
-        case 1:
-          setStatusMessage('Processing');
-          break;
-        case 2:
-          setStatusMessage('CMD Successful');
-          setLiveValveStatus(data.ManualOP === 0); // Update live valve status
-          break;
-        case 3:
-          setStatusMessage('CMD Failed');
-          setLiveValveStatus(prev => !prev); // Revert live valve status
-          break;
-        default:
-          console.warn('Unexpected DIK value:', data.DIK);
-      }
-    } catch (error) {
-      console.error('Error fetching live valve status:', error);
-    }
-  };
-
-  // Poll every 2 seconds
-  const interval = setInterval(fetchLiveValveStatus, 2000);
-  return () => clearInterval(interval);
-}, [valveID]);
-
-
-useEffect(() => {
-  const fetchStatus = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/live/valves/${valveID}`);
-      if (!response.ok) throw new Error('HTTP error');
-      
-      const data = await response.json();
-      // console.log('Polling response:', data); // Debugging line
-      
-      // Make sure we're using the correct case for DIK (backend uses uppercase)
-      switch (data.DIK) { // <-- Note uppercase DIK here
-        case 1: 
-          setStatusMessage('Processing');
-          break;
-        case 2: 
-          setStatusMessage('CMD Successful');
-          // Update the switch state if needed
-          setLiveValveStatus(data.ManualOP === 0);
-          break;
-        case 3: 
-          setStatusMessage('CMD Failed');
-          // Revert to previous state if command failed
-          setLiveValveStatus(prev => !prev);
-          break;
-        default:
-          console.warn('Unexpected DIK value:', data.DIK);
-      }
-    } catch (error) {
-      console.error('Polling error:', error);
-    }
-  };
-
-  const interval = setInterval(fetchStatus, 5000);
-  return () => clearInterval(interval);
-}, [valveID]); // Add valveID to dependencies
 
   // Fetch history
   const fetchHistory = async () => {
@@ -921,80 +886,3 @@ useEffect(() => {
   });
 
 
-
-
-//Tried Componenting this ..some errors , will try again later
-
-// import React, { useState, useEffect } from 'react';
-// import { ScrollView, View, StyleSheet } from 'react-native';
-// import { useRouter, useLocalSearchParams } from 'expo-router';
-// import BackgroundImage from '../../components_ad/Background';
-// import BackButton from '../../components_ad/BackButton';
-// import Header from '../../components_ad/valve-control/Header';
-// import LiveValveStatus from '../../components_ad/valve-control/LiveValveStatus';
-// import TapControl from '../../components_ad/valve-control/TapControl';
-// import TimePicker from '../../components_ad/valve-control/TimePicker';
-// import DurationPicker from '../../components_ad/valve-control/DurationPicker';
-// import StatusIndicator from '../../components_ad/valve-control/StatusIndicator';
-// import HistoryButton from '../../components_ad/valve-control/HistoryButton';
-// import HistoryModal from '../../components_ad/valve-control/HistoryModal';
-
-// export default function Screen3() {
-//   const router = useRouter();
-//   const params = useLocalSearchParams();
-//   const valveID = Array.isArray(params.id) ? params.id[0] : params.id;
-
-//   const [isTapOn, setIsTapOn] = useState(false);
-//   const [wateringTime, setWateringTime] = useState(new Date());
-//   const [duration, setDuration] = useState(15);
-//   const [liveValveStatus, setLiveValveStatus] = useState(false);
-//   const [statusMessage, setStatusMessage] = useState('');
-//   const [historyData, setHistoryData] = useState([]);
-//   const [showHistoryPopup, setShowHistoryPopup] = useState(false);
-//   const [scheduleStatus, setScheduleStatus] = useState({
-//     status: 'Updated',
-//     lastUpdated: new Date().toLocaleString(),
-//   });
-
-//   // Add your API calls and logic here...
-
-//   return (
-//     <BackgroundImage>
-//       <ScrollView>
-//         <View style={styles.container}>
-//           <Header valveID={valveID} />
-//           <LiveValveStatus
-//             status={{ message: liveValveStatus ? 'OFF' : 'ON', color: liveValveStatus ? '#f44336' : '#4CAF50' }}
-//             onPress={() => setLiveValveStatus(!liveValveStatus)}
-//           />
-//           <TapControl isTapOn={isTapOn} onToggle={(value) => setIsTapOn(value)} />
-//           <TimePicker wateringTime={wateringTime} onTimeChange={(event, selectedTime) => {
-//             if (selectedTime) setWateringTime(selectedTime);
-//           }} />
-//           <DurationPicker duration={duration} onDurationChange={setDuration} />
-//           <StatusIndicator scheduleStatus={scheduleStatus} />
-//           <HistoryButton onPress={() => {
-//             // Fetch history and show modal
-//             setShowHistoryPopup(true);
-//           }} />
-//           <HistoryModal
-//             visible={showHistoryPopup}
-//             data={historyData}
-//             onClose={() => setShowHistoryPopup(false)}
-//           />
-//           <BackButton onPress={() => router.back()} />
-//         </View>
-//       </ScrollView>
-//     </BackgroundImage>
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     padding: 20,
-//     paddingTop: 15,
-//     alignItems: 'center',
-//   },
-
-// }); 

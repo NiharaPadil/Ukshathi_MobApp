@@ -2,13 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, Pressable, ActivityIndicator, StyleSheet, Dimensions, Modal,ScrollView } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import Constants from 'expo-constants';
-import { Ionicons } from '@expo/vector-icons';
 import { globalStyles } from '../../style';
-import WavyHeader from '../../components_ad/WavyHeader';
-import Background from "../../components_ad/Background";
+import WavyHeader from '../../components_ad/WavyHeader'; // Import the WavyHeader component
+import Background from "../../components_ad/Background";// Import the Background component
 import BatteryHealthGraph from '../../components_ad/BatteryHealthGraph'; // Import the BatteryHealthGraph component
-import { LineChart } from "react-native-chart-kit"; // Import your graph library
-import BackButton from '../../components_ad/BackButton';
+import BackButton from '../../components_ad/BackButton';// Import the BackButton component
 
 const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL ?? '';
 

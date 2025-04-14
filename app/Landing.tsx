@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Stack } from 'expo-router';
 import { View, Text, Pressable, StyleSheet, ScrollView, Image, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import Constants from 'expo-constants';
@@ -11,13 +10,17 @@ export default function LandingScreen() {
   const [hovered, setHovered] = useState<string | null>(null);
   const [userProducts, setUserProducts] = useState([]);
   const [userId, setUserId] = useState('');
-  const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL ?? '';
-  const [name, setName] = useState(null);
 
+  
+  const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL ?? '';
+
+
+  // Fetch user data when the component mounts and set userId and name
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const storedUserId = await AsyncStorage.getItem('userID');
+        const storedName = await AsyncStorage.getItem('name');
         if (!storedUserId) {
           console.error('No user_id found in storage');
           Alert.alert('Error', 'User ID not found. Please login again.');
@@ -26,6 +29,7 @@ export default function LandingScreen() {
         setUserId(storedUserId);
         console.log('Retrieved user_id:', storedUserId);
 
+        //get how many controllers the user has 
         const response = await fetch(`${API_BASE_URL}/device/controller/${storedUserId}`);
         const data = await response.json();
         console.log('User products:', data);
@@ -38,6 +42,8 @@ export default function LandingScreen() {
     fetchUserData();
   }, []);
 
+
+  //logout function, this function will be called when the user clicks the logout button
   const handleLogout = async () => {
     try {
       await AsyncStorage.clear();
@@ -47,6 +53,8 @@ export default function LandingScreen() {
     }
   };
 
+
+  // Check if the user has any products and set permissions accordingly
   const userPermissions: string[] = userProducts;
   console.log('User permissions:', userPermissions);
 
@@ -54,7 +62,7 @@ export default function LandingScreen() {
     {
       name: 'Uno',
       desc: 'A single valve system for precise, Wifi/4G-enabled watering of up to 100 plants, all in a weatherproof IP65 design',
-      route: '/quadra_screens/screen1',
+      route: '/quadra_screens/screen1',//change the route to the correct one
       image: require('../assets/images/Uno.jpg'),
     },
     {
@@ -66,13 +74,13 @@ export default function LandingScreen() {
     {
       name: 'Hexa',
       desc: 'A sleek hexagonal tank with smart scheduling, designed for balconies without taps, integrates with RO units and AC compressors, and offers Wi-Fi/4G connectivity in an IP65 weatherproof build.',
-      route: '/quadra_screens/screen1',
+      route: '/quadra_screens/screen1',//change the route to the correct one
       image: require('../assets/images/Hexa.jpg'),
     },
     {
       name: 'Octa',
       desc: 'Manage up to 8 valves with precision scheduling, perfect for large outdoor spaces, and connect via Wi-Fi or 4G in a rugged, IP65 weatherproof design, ensuring your garden thrives effortlessly.',
-      route: '/quadra_screens/screen1',
+      route: '/quadra_screens/screen1',// change the route to the correct one
       image: require('../assets/images/Octa.jpg'),
     },
   ];
@@ -82,7 +90,7 @@ export default function LandingScreen() {
       <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
         <View style={styles.container}>
           <View style={styles.titcontainer}>
-          <Text style={[styles.title, { left:35,top:-15 }]}>Welcome {name}</Text>
+          <Text style={[styles.title, { left:35,top:-15 }]}>Welcome</Text>
 
             <Pressable style={styles.logoutButton} onPress={handleLogout}>
               <Text style={styles.logoutText}>Logout</Text>

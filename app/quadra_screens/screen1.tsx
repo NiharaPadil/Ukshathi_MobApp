@@ -1,15 +1,8 @@
-
-
-
-
-
-
 import { View, Text, Pressable, Image, ActivityIndicator, StyleSheet, Animated } from 'react-native';
 import { useRouter } from 'expo-router';
 import React, { useState, useEffect, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
-import { Ionicons } from '@expo/vector-icons';
 import { globalStyles } from '../../style';
 import BackgroundImage from '../../components_ad/Background';
 import BackButton from '../../components_ad/BackButton';
