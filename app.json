@@ -25,6 +25,8 @@
 
     },
     "android": {
+      "permissions": ["NOTIFICATIONS"],
+      
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/LeafLogo1024.png",
         "backgroundColor": "#ffffff"
@@ -52,7 +54,7 @@
       "typedRoutes": true
     },
     "extra": {
-      "API_BASE_URL": "http://192.168.1.9:5000",
+      "API_BASE_URL": "http://192.168.1.28:5000",
       "API_KEY": "b0426aacb17e876e66782a808069b5fa",
       "router": {
         "origin": false
