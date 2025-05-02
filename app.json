@@ -8,36 +8,6 @@
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "ios": {
-      "supportsTablet": true,
-      "plugins": [
-      [
-        "expo-notifications",
-        {
-          "icon": "./assets/images/LeafLogo1024.png",
-          "color": "#809c13", 
-          "androidMode": "default", 
-          "androidCollapsedTitle": "New watering reminder",
-          "iosAllowsForegroundNotifications": true
-        }
-      ]
-    ]
-
-    },
-    "android": {
-      "permissions": ["NOTIFICATIONS"],
-      
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/images/LeafLogo1024.png",
-        "backgroundColor": "#ffffff"
-      }
-    },
-    "web": {
-      "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/images/LeafLogo1024.png"
-      
-    },
     "plugins": [
       "expo-router",
       [
@@ -48,13 +18,53 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "kotlinVersion": "1.9.25"
+          }
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/LeafLogo1024.png",
+          "color": "#809c13",
+          "androidMode": "default",
+          "androidCollapsedTitle": "New watering reminder",
+          "iosAllowsForegroundNotifications": true
+        }
       ]
     ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.niharapadil.ukshathi",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "permissions": [
+        "NOTIFICATIONS"
+      ],
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/LeafLogo1024.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.niharapadil.ukshathi"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/LeafLogo1024.png"
+    },
     "experiments": {
       "typedRoutes": true
     },
     "extra": {
-      "API_BASE_URL": "http://192.168.1.28:5000",
+      "API_BASE_URL": "http://192.168.1.34:5000",
       "API_KEY": "b0426aacb17e876e66782a808069b5fa",
       "router": {
         "origin": false
@@ -66,4 +76,3 @@
     "owner": "niharapadil"
   }
 }
-

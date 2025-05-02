@@ -100,7 +100,7 @@ export default function Layout() {
             name="quadra_screens/screen3" 
             options={{ title: "Quadra Screen 3" }} 
           />
-          <Stack.Screen name="NotificationsScreen" />
+          <Stack.Screen name="NotificationsScreen"  />
           <Stack.Screen name="AboutUsScreen" />
           <Stack.Screen name="ContactScreen" />
         </Stack>
