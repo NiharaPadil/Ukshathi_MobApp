@@ -1,4 +1,5 @@
 // index.js
+
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
@@ -9,20 +10,17 @@ import {
   Alert,
   Image,
   ActivityIndicator,
-  Platform,
 } from 'react-native';
 import { router } from 'expo-router';
 import Constants from 'expo-constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
+import * as Application from 'expo-application';
 import Background from '../components_ad/Background';
 
-
-
-// 1️⃣ Ensure notifications show in foreground
+// Notification handler setup
 Notifications.setNotificationHandler({
-  // 2️⃣ Show alerts even when app is foregrounded
   handleNotification: async () => ({
     shouldShowAlert: true,
     shouldPlaySound: true,
@@ -30,140 +28,175 @@ Notifications.setNotificationHandler({
   }),
 });
 
-// 2️⃣ Helper to register and get Expo push token
+// Enhanced push notification registration
 async function registerForPushNotificationsAsync() {
   if (!Device.isDevice) {
     Alert.alert('Must use a physical device for Push Notifications');
     return null;
   }
+
   const { status: existingStatus } = await Notifications.getPermissionsAsync();
   let finalStatus = existingStatus;
+
   if (existingStatus !== 'granted') {
     const { status } = await Notifications.requestPermissionsAsync();
     finalStatus = status;
   }
+
   if (finalStatus !== 'granted') {
     Alert.alert('Failed to get push token!');
     return null;
   }
+
   const tokenData = await Notifications.getExpoPushTokenAsync();
+  const deviceId = Application.getAndroidId();
+
+  // Store both token and device ID
+  await AsyncStorage.multiSet([
+    ['expoPushToken', tokenData.data],
+    ['androidDeviceID', deviceId || ''],
+  ]);
+
   return tokenData.data;
 }
 
-
 export default function Index() {
-  const [userEmail, setUserEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [userEmail, setUserEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState('');
 
-  // !!!!!!!! Make sure to set this in your app.json (your ip adress) otherwise your backend will not work
-  const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL ?? "";
-
-
-  const notificationListener = useRef<any>(null);
-  const responseListener = useRef<any>(null);
+  const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL ?? '';
+  const notificationListener = useRef<Notifications.Subscription | null>(null);
+  const responseListener = useRef<Notifications.Subscription | null>(null);
 
   useEffect(() => {
-    // Register for notifications
-    registerForPushNotificationsAsync()
-      .then(token => console.log('Push Token:', token))
-      .catch(err => console.error(err));
+    // Setup notifications
+    const setupNotifications = async () => {
+      try {
+        const token = await registerForPushNotificationsAsync();
+        console.log('Push Token:', token);
 
-    // Listen for incoming notifications (foreground & background)
-    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
-      console.log('Notification received:', notification);
-    });
+        notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+          console.log('Notification received:', notification);
+          // Handle foreground notifications here
+        });
 
-    // Listen for user tapping on notification (background & terminated)
-    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
-      console.log('Notification response:', response);
-      // e.g. router.push('/notification-details/' + response.notification.request.content.data.id)
-    });
+        responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+          console.log('Notification response:', response);
+          // Handle notification taps here
+        });
+      } catch (error) {
+        console.error('Notification setup error:', error);
+      }
+    };
+
+    setupNotifications();
 
     return () => {
-      Notifications.removeNotificationSubscription(notificationListener.current);
-      Notifications.removeNotificationSubscription(responseListener.current);
+      if (notificationListener.current) {
+        Notifications.removeNotificationSubscription(notificationListener.current);
+      }
+      if (responseListener.current) {
+        Notifications.removeNotificationSubscription(responseListener.current);
+      }
     };
   }, []);
 
-
-  //if the user is logged in, will redirect them to the landing page
   useEffect(() => {
     const checkUserSession = async () => {
       try {
-        const storedUserId = await AsyncStorage.getItem("userID");
+        const storedUserId = await AsyncStorage.getItem('userID');
         if (storedUserId) {
-          console.log("User ID found:", storedUserId); //debug point
-          router.replace("./Landing"); // Redirect to landing page if user is already logged in
+          router.replace('./Landing');
         }
       } catch (error) {
-        console.error("Error checking user session:", error);
+        console.error('Error checking user session:', error);
       }
     };
 
     checkUserSession();
   }, []);
 
-  //handle login function ,this function will be called when the user clicks the login button,it will send a post request to the backend with the user email and password
-  //if the login is successful, it will store the user id in async storage and redirect to the landing page
   const handleLogin = async () => {
-    if (!userEmail || !password) {
-      setErrorMessage("Email and password are required");
-      return;
+  if (!userEmail || !password) {
+    setErrorMessage("Email and password are required");
+    return;
+  }
+
+  setIsLoading(true);
+  setErrorMessage("");
+
+  try {
+    // 1. First perform user login
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userEmail,
+        passwordHash: password,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Invalid credentials");
     }
 
-    setIsLoading(true);
-    setErrorMessage("");
+    if (!data.userID) {
+      throw new Error("User ID missing in response");
+    }
 
+    // 2. Store user ID
+    await AsyncStorage.setItem("userID", data.userID.toString());
+
+    // 3. Register device (non-blocking)
     try {
-      console.log("Attempting login with", { userEmail, password }); //debug point
+      const [expoPushToken, androidDeviceID] = await AsyncStorage.multiGet([
+        'expoPushToken',
+        'androidDeviceID',
+      ]);
 
-      // Attempt login with email, password, and push token
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userEmail,
-          passwordHash: password,
-        }),
-      });
+      if (expoPushToken[1] && androidDeviceID[1]) {
+        const deviceResponse = await fetch(`${API_BASE_URL}/noti/register-device`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: data.userID,
+            token: expoPushToken[1],
+            deviceId: androidDeviceID[1],
+          }),
+        });
 
-      const data = await response.json();
-      console.log("API Response:", data); //debug point
-
-      if (response.ok) {
-        if (!data.userID) {
-          throw new Error("User ID missing in response");
+        if (!deviceResponse.ok) {
+          const errorData = await deviceResponse.json();
+          console.warn('Device registration warning:', errorData);
+        } else {
+          console.log('Device registered successfully');
         }
-
-        // Store user ID in AsyncStorage
-        await AsyncStorage.setItem("userID", data.userID.toString()); // Store user ID in AsyncStorage
-        console.log("User ID stored:", data.userID); //debug point
-
-        // Redirect to landing page
-        router.replace("/Landing");
-      } else {
-        throw new Error(data.message || "Invalid credentials");
       }
-    } catch (error: any) {
-      if (error instanceof Error) {
-        console.error("Login Error:", error.message);
-        setErrorMessage(error.message);
-      } else {
-        setErrorMessage("An unknown error occurred");
-      }
-    } finally {
-      setIsLoading(false);
+    } catch (deviceError) {
+      console.warn('Non-critical device registration error:', deviceError);
     }
-  };
+
+    // 4. Redirect user
+    router.replace("/Landing");
+
+  } catch (error: any) {
+    console.error("Login Error:", error.message);
+    setErrorMessage(error.message || "An unknown error occurred");
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   return (
     <Background>
       <View style={styles.container}>
         <Image
-          source={require("../assets/images/logowithleaf.png")}
+          source={require('../assets/images/logowithleaf.png')}
           style={styles.logoImage}
         />
         <Text style={styles.loginText}>Login</Text>
@@ -174,6 +207,8 @@ export default function Index() {
           onChangeText={setUserEmail}
           style={styles.input}
           placeholderTextColor="#a9a9a9"
+          autoCapitalize="none"
+          keyboardType="email-address"
         />
 
         <View style={styles.passwordContainer}>
@@ -192,8 +227,8 @@ export default function Index() {
             <Image
               source={
                 isPasswordVisible
-                  ? require("../assets/images/visible.png")
-                  : require("../assets/images/hide.png")
+                  ? require('../assets/images/visible.png')
+                  : require('../assets/images/hide.png')
               }
               style={styles.eyeIcon}
             />
@@ -221,7 +256,7 @@ export default function Index() {
 
         <TouchableOpacity style={styles.googleButton}>
           <Image
-            source={require("../assets/images/google.png")}
+            source={require('../assets/images/google.png')}
             style={styles.googleLogo}
           />
           <Text style={styles.googleButtonText}>Continue with Google</Text>
@@ -229,7 +264,7 @@ export default function Index() {
 
         <View style={styles.signupTextContainer}>
           <Text style={styles.signupText}>New User? </Text>
-          <TouchableOpacity onPress={() => router.push("./Register")}>
+          <TouchableOpacity onPress={() => router.push('./Register')}>
             <Text style={styles.signupLink}>Register</Text>
           </TouchableOpacity>
         </View>
@@ -237,6 +272,7 @@ export default function Index() {
     </Background>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {

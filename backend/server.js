@@ -59,7 +59,7 @@ app.use("/tap", TapValve);
 app.use("/live", LiveTap);
 app.use("/queries", Queries);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-app.use("/notifications", Notifications);
+app.use("/noti", Notifications);
 
 
 // Error handling middleware
