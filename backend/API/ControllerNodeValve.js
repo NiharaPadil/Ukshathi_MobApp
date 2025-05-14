@@ -29,8 +29,8 @@ router.get('/nodes', (req, res) => {
 
   const query = `
         SELECT N.*, U.firstName, U.lastName
-        FROM Node N
-        JOIN Controller C ON N.controllerID = C.controllerID
+        FROM node N
+        JOIN controller C ON N.controllerID = C.controllerID
         JOIN userData U ON C.userID = U.userID
         WHERE C.userID = ?;
     `;

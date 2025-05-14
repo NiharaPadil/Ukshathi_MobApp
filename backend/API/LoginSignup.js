@@ -5,6 +5,7 @@ const router = express.Router();
 const bcrypt = require("bcryptjs");
 const { v4: uuidv4 } = require("uuid");
 const db = require("../server"); // Import the database connection from server.js
+require("dotenv").config();
 
 router.post('/login', async (req, res) => {
   let { userEmail,passwordHash} = req.body;
@@ -16,6 +17,9 @@ router.post('/login', async (req, res) => {
   userEmail = userEmail.toString().trim();
   passwordHash = passwordHash.toString().trim();
   const pepper = process.env.PEPPER;
+  //debug
+  console.log('Login attempt:', { userEmail, passwordHash });
+  console.log('PEPPER:', pepper);
 
   try {
     const query = 'SELECT * FROM userLogin WHERE userEmail = ?';
@@ -24,6 +28,8 @@ router.post('/login', async (req, res) => {
     if (results.length === 0) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
+
+    console.log('User found:', results[0]);
 
     const user = results[0];
     const isMatch = await bcrypt.compare(passwordHash + pepper, user.passwordHash);
