@@ -5,7 +5,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Linking } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { FontAwesome, MaterialIcons, Entypo } from '@expo/vector-icons';
-import Background from '.././components_ad/Background';
+import Background from '../../components_ad/Background';
 
 const ContactScreen = () => {
   const latitude = 12.87607;

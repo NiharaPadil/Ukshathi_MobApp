@@ -25,19 +25,19 @@ export default function Layout() {
   const renderDrawerContent = () => (
     <View style={styles.drawer}>
       <Text style={styles.drawerTitle}>Menu</Text>
-      <Pressable onPress={() => navigateTo('/Landing')} style={styles.drawerItem}>
+      <Pressable onPress={() => navigateTo('/pages/Landing')} style={styles.drawerItem}>
         <Text style={styles.text}>Landing</Text>
       </Pressable>
-      <Pressable onPress={() => navigateTo('/NotificationsScreen')} style={styles.drawerItem}>
+      <Pressable onPress={() => navigateTo('/pages/NotificationsScreen')} style={styles.drawerItem}>
         <Text style={styles.text}>Notifications</Text>
       </Pressable>
-      <Pressable onPress={() => navigateTo('/AboutUsScreen')} style={styles.drawerItem}>
+      <Pressable onPress={() => navigateTo('/pages/AboutUsScreen')} style={styles.drawerItem}>
         <Text style={styles.text}>About Us</Text>
       </Pressable>
-      <Pressable onPress={() => navigateTo('/ContactScreen')} style={styles.drawerItem}>
+      <Pressable onPress={() => navigateTo('/pages/ContactScreen')} style={styles.drawerItem}>
         <Text style={styles.text}>Contact</Text>
       </Pressable>
-      <Pressable onPress={() => navigateTo('/Queries')} style={styles.drawerItem}>
+      <Pressable onPress={() => navigateTo('/pages/Queries')} style={styles.drawerItem}>
         <Text style={styles.text}>Queries</Text>
       </Pressable>
 
@@ -86,8 +86,10 @@ export default function Layout() {
           }}
         >
           <Stack.Screen name="index" />
-          <Stack.Screen name="Landing" />
-          <Stack.Screen name="Register" />
+          <Stack.Screen name="pages/Landing" />
+          <Stack.Screen name="Register" />  
+
+
           <Stack.Screen 
             name="quadra_screens/screen1" 
             options={{ title: "Quadra Screen 1" }} 
@@ -100,9 +102,9 @@ export default function Layout() {
             name="quadra_screens/screen3" 
             options={{ title: "Quadra Screen 3" }} 
           />
-          <Stack.Screen name="NotificationsScreen"  />
-          <Stack.Screen name="AboutUsScreen" />
-          <Stack.Screen name="ContactScreen" />
+          <Stack.Screen name="pages/NotificationsScreen"  />
+          <Stack.Screen name="pages/AboutUsScreen" />
+          <Stack.Screen name="pages/ContactScreen" />
         </Stack>
       </View>
     </DrawerLayoutAndroid>

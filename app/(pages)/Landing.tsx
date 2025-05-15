@@ -3,7 +3,7 @@ import { View, Text, Pressable, StyleSheet, ScrollView, Image, Alert } from 'rea
 import { useRouter } from 'expo-router';
 import Constants from 'expo-constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Background from '.././components_ad/Background';
+import Background from '../../components_ad/Background';
 
 export default function LandingScreen() {
   const router = useRouter();
@@ -63,25 +63,25 @@ export default function LandingScreen() {
       name: 'Uno',
       desc: 'A single valve system for precise, Wifi/4G-enabled watering of up to 100 plants, all in a weatherproof IP65 design',
       route: '/quadra_screens/screen1',//change the route to the correct one
-      image: require('../assets/images/Uno.jpg'),
+      image: require('../../assets/images/Uno.jpg')
     },
     {
       name: 'Quadra',
       desc: 'QUADRA revolutionizes large-scale irrigation with solar-powered nodes managing up to 4 valves, compatible with various methods, and featuring LoRa® technology for precise wireless control via Wi-Fi or 4G in a durable IP65 design.',
       route: '/quadra_screens/screen1',
-      image: require('../assets/images/Quadra.jpg'),
+      image: require('../../assets/images/Quadra.jpg'),
     },
     {
       name: 'Hexa',
       desc: 'A sleek hexagonal tank with smart scheduling, designed for balconies without taps, integrates with RO units and AC compressors, and offers Wi-Fi/4G connectivity in an IP65 weatherproof build.',
       route: '/quadra_screens/screen1',//change the route to the correct one
-      image: require('../assets/images/Hexa.jpg'),
+      image: require('../../assets/images/Hexa.jpg'),
     },
     {
       name: 'Octa',
       desc: 'Manage up to 8 valves with precision scheduling, perfect for large outdoor spaces, and connect via Wi-Fi or 4G in a rugged, IP65 weatherproof design, ensuring your garden thrives effortlessly.',
       route: '/quadra_screens/screen1',// change the route to the correct one
-      image: require('../assets/images/Octa.jpg'),
+      image: require('../../assets/images/Octa.jpg'),
     },
   ];
 

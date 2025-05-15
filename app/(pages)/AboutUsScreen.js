@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, Image, StyleSheet, ScrollView, Animated } from 'react-native';
-import Background from '.././components_ad/Background';
+import Background from '../../components_ad/Background';
 
 const AboutUsScreen = () => {
   const shakeAnim = useRef(new Animated.Value(0)).current;
@@ -35,7 +35,7 @@ const AboutUsScreen = () => {
       </View>
       
       <Animated.View style={[styles.imageContainer, { transform: [{ translateX: shakeAnim }] }]}>
-        <Image source={require('.././assets/images/logowithleaf.png')} style={styles.logo} />
+        <Image source={require('../../assets/images/logowithleaf.png')} style={styles.logo} />
       </Animated.View>
       
       <Text style={styles.sectionTitle}>Innovation for Sustainable Farming</Text>

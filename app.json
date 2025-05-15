@@ -64,7 +64,7 @@
       "typedRoutes": true
     },
     "extra": {
-      "API_BASE_URL": "http://192.168.1.35:5000",
+      "API_BASE_URL": "http://192.168.1.11:5000",
       "API_KEY": "b0426aacb17e876e66782a808069b5fa",
       "router": {
         "origin": false
