@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import { DrawerLayoutAndroid, View, Text, Pressable, StyleSheet, Linking } from 'react-native';
 import { Stack, useRouter, usePathname } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function Layout() {
   const router = useRouter();
@@ -19,43 +20,43 @@ export default function Layout() {
   };
 
   const renderDrawerContent = () => (
-    <View style={styles.drawer}>
-      <Text style={styles.drawerTitle}>Menu</Text>
+    <LinearGradient
+      colors={['#4CAF50', '#A8D5BA', '#E6F2E6', '#ffffff']} // leaf green to white gradient
+      style={styles.drawer}
+    >
+      <Text style={styles.drawerTitle}>☰</Text>
 
-      <Pressable onPress={() => navigateTo('/Landing')} style={styles.drawerItem}>
-        <Text style={styles.text}>Landing</Text>
-      </Pressable>
       <Pressable onPress={() => navigateTo('/NotificationsScreen')} style={styles.drawerItem}>
-        <Text style={styles.text}>Notifications</Text>
+        <MaterialCommunityIcons name="bell-outline" size={24} color="#000" />
       </Pressable>
       <Pressable onPress={() => navigateTo('/AboutUsScreen')} style={styles.drawerItem}>
-        <Text style={styles.text}>About Us</Text>
+        <MaterialCommunityIcons name="information-outline" size={24} color="#000" />
       </Pressable>
       <Pressable onPress={() => navigateTo('/ContactScreen')} style={styles.drawerItem}>
-        <Text style={styles.text}>Contact</Text>
+        <MaterialCommunityIcons name="phone-outline" size={24} color="#000" />
       </Pressable>
       <Pressable onPress={() => navigateTo('/Queries')} style={styles.drawerItem}>
-        <Text style={styles.text}>Queries</Text>
+        <MaterialCommunityIcons name="chat-question-outline" size={24} color="#000" />
       </Pressable>
 
       <View style={styles.socialContainer}>
-        <Pressable onPress={() => Linking.openURL('https://instagram.com/yourpage')} style={styles.socialIcon}>
-          <MaterialCommunityIcons name="instagram" size={24} color="#E1306C" />
+        <Pressable onPress={() => Linking.openURL('https://instagram.com/yourpage')}>
+          <MaterialCommunityIcons name="instagram" size={22} color="#E1306C" />
         </Pressable>
-        <Pressable onPress={() => Linking.openURL('https://linkedin.com/company/ukshati-technologies')} style={styles.socialIcon}>
-          <MaterialCommunityIcons name="linkedin" size={24} color="#0077b5" />
+        <Pressable onPress={() => Linking.openURL('https://linkedin.com/company/ukshati-technologies')}>
+          <MaterialCommunityIcons name="linkedin" size={22} color="#0077b5" />
         </Pressable>
-        <Pressable onPress={() => Linking.openURL('https://facebook.com/yourpage')} style={styles.socialIcon}>
-          <MaterialCommunityIcons name="facebook" size={24} color="#3b5998" />
+        <Pressable onPress={() => Linking.openURL('https://facebook.com/yourpage')}>
+          <MaterialCommunityIcons name="facebook" size={22} color="#3b5998" />
         </Pressable>
       </View>
-    </View>
+    </LinearGradient>
   );
 
   return (
     <DrawerLayoutAndroid
       ref={drawerRef}
-      drawerWidth={160}
+      drawerWidth={100}
       drawerPosition="left"
       renderNavigationView={isIndex ? () => <View /> : renderDrawerContent}
     >
@@ -66,29 +67,14 @@ export default function Layout() {
           </Pressable>
         )}
 
-        <Stack
-          initialRouteName="index"
-          screenOptions={{ headerShown: false }}
-        >
+        <Stack initialRouteName="index" screenOptions={{ headerShown: false }}>
           <Stack.Screen name="index" />
           <Stack.Screen name="Register" />
-
-          {/* Pages in (pages)/
-          <Stack.Screen name="(pages)/Landing" />
-          <Stack.Screen name="(pages)/NotificationsScreen" />
-          <Stack.Screen name="(pages)/AboutUsScreen" />
-          <Stack.Screen name="(pages)/ContactScreen" />
-          <Stack.Screen name="(pages)/Queries" /> */}
-
-
           <Stack.Screen name="Landing" />
-<Stack.Screen name="NotificationsScreen" />
-<Stack.Screen name="AboutUsScreen" />
-<Stack.Screen name="ContactScreen" />
-<Stack.Screen name="Queries" />
-
-
-          {/* Other grouped pages */}
+          <Stack.Screen name="NotificationsScreen" />
+          <Stack.Screen name="AboutUsScreen" />
+          <Stack.Screen name="ContactScreen" />
+          <Stack.Screen name="Queries" />
           <Stack.Screen name="quadra_screens/screen1" options={{ title: 'Quadra Screen 1' }} />
           <Stack.Screen name="quadra_screens/screen2" options={{ title: 'Quadra Screen 2' }} />
           <Stack.Screen name="quadra_screens/screen3" options={{ title: 'Quadra Screen 3' }} />
@@ -102,41 +88,38 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   menuButton: {
     padding: 10,
-    backgroundColor: "#ddd",
-    borderRadius: 5,
+    backgroundColor: "#fff",
+    borderRadius: 50,
+    elevation: 4,
     margin: 10,
     position: "absolute",
-    top: 60,
+    top: 100,
     left: 20,
     zIndex: 1,
   },
-  menuText: { fontSize: 15 },
+  menuText: { fontSize: 20, fontWeight: 'bold' },
   drawer: {
     flex: 1,
-    backgroundColor: "#98b289",
-    padding: 20,
-    margin: 10,
-    borderRadius: 30
+    paddingVertical: 70,
+    alignItems: "center",
+    borderTopRightRadius: 0,
+    borderBottomRightRadius: 0,
+    overflow: 'hidden',
   },
   drawerTitle: {
-    fontSize: 25,
+    fontSize: 22,
     fontWeight: "bold",
-    marginBottom: 20,
-    textDecorationLine: "underline"
+    marginBottom: 30,
   },
-  drawerItem: { marginBottom: 18 },
-  text: {
-    fontSize: 16,
-    fontWeight: "bold"
+  drawerItem: {
+    marginVertical: 15,
+    alignItems: "center",
   },
   socialContainer: {
-    flexDirection: "row",
-    justifyContent: "space-around",
     marginTop: 'auto',
-    paddingVertical: 20
-  },
-  socialIcon: {
-    padding: 8,
-    borderRadius: 5
+    marginBottom: 10,
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 10,
   },
 });

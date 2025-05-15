@@ -106,6 +106,7 @@ export default function Screen1() {
         <View style={styles.header}>
           <Text style={styles.headerText}>Nodes</Text>
         </View>
+        
 
         {/* User Info with Wobble Animation */}
         <Animated.View
@@ -125,6 +126,7 @@ export default function Screen1() {
           </Text>
           <Image source={require('../../assets/images/Quadra.jpg')} style={styles.userImage} />
         </Animated.View>
+       
 
         {/* Node List */}
         <View style={styles.nodeList}>
@@ -150,7 +152,7 @@ export default function Screen1() {
             ))
           )}
         </View>
-
+ 
         <BackButton onPress={() => router.back()} />
       </View>
     </BackgroundImage>

@@ -1,9 +1,20 @@
-import { useState, useEffect } from 'react';
-import { View, Text, Pressable, StyleSheet, ScrollView, Image, Alert } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  Image,
+  Alert,
+  ScrollView,
+  Dimensions,
+} from 'react-native';
 import { useRouter } from 'expo-router';
-import Constants from 'expo-constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Constants from 'expo-constants';
+
 import Background from '../../components_ad/Background';
+import LogoutButton from '../../components_ad/Logout'; // Button with icon & "Logout" text
 
 export default function LandingScreen() {
   const router = useRouter();
@@ -11,115 +22,109 @@ export default function LandingScreen() {
   const [userProducts, setUserProducts] = useState([]);
   const [userId, setUserId] = useState('');
 
-  
   const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL ?? '';
 
-
-  // Fetch user data when the component mounts and set userId and name
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const storedUserId = await AsyncStorage.getItem('userID');
-        const storedName = await AsyncStorage.getItem('name');
         if (!storedUserId) {
-          console.error('No user_id found in storage');
-          Alert.alert('Error', 'User ID not found. Please login again.');
+          Alert.alert('Error', 'User not logged in');
           return;
         }
-        setUserId(storedUserId);
-        console.log('Retrieved user_id:', storedUserId);
 
-        //get how many controllers the user has 
+        setUserId(storedUserId);
+
         const response = await fetch(`${API_BASE_URL}/device/controller/${storedUserId}`);
         const data = await response.json();
-        console.log('User products:', data);
         setUserProducts(data);
-      } catch (error) {
-        console.error('Error fetching user products:', error);
+      } catch (err) {
+        console.error('Fetch error:', err);
+        Alert.alert('Failed to fetch user data');
       }
     };
 
     fetchUserData();
   }, []);
 
-
-  //logout function, this function will be called when the user clicks the logout button
   const handleLogout = async () => {
     try {
       await AsyncStorage.clear();
-      router.push('/');
+      router.replace('/');
     } catch (error) {
-      console.error('Error during logout:', error);
+      Alert.alert('Logout Failed');
     }
   };
-
-
-  // Check if the user has any products and set permissions accordingly
-  const userPermissions: string[] = userProducts;
-  console.log('User permissions:', userPermissions);
 
   const items = [
     {
       name: 'Uno',
-      desc: 'A single valve system for precise, Wifi/4G-enabled watering of up to 100 plants, all in a weatherproof IP65 design',
-      route: '/quadra_screens/screen1',//change the route to the correct one
-      image: require('../../assets/images/Uno.jpg')
+      desc: 'A single valve system for precise, Wifi/4G-enabled watering of up to 100 plants, all in a weatherproof IP65 design.',
+      route: '/quadra_screens/screen1',
+      image: require('../../assets/images/Uno.jpg'),
     },
     {
       name: 'Quadra',
-      desc: 'QUADRA revolutionizes large-scale irrigation with solar-powered nodes managing up to 4 valves, compatible with various methods, and featuring LoRa® technology for precise wireless control via Wi-Fi or 4G in a durable IP65 design.',
+      desc: 'QUADRA revolutionizes large-scale irrigation with solar-powered nodes managing up to 4 valves.',
       route: '/quadra_screens/screen1',
       image: require('../../assets/images/Quadra.jpg'),
     },
     {
       name: 'Hexa',
-      desc: 'A sleek hexagonal tank with smart scheduling, designed for balconies without taps, integrates with RO units and AC compressors, and offers Wi-Fi/4G connectivity in an IP65 weatherproof build.',
-      route: '/quadra_screens/screen1',//change the route to the correct one
+      desc: 'A sleek hexagonal tank with smart scheduling, designed for balconies.',
+      route: '/quadra_screens/screen1',
       image: require('../../assets/images/Hexa.jpg'),
     },
     {
       name: 'Octa',
-      desc: 'Manage up to 8 valves with precision scheduling, perfect for large outdoor spaces, and connect via Wi-Fi or 4G in a rugged, IP65 weatherproof design, ensuring your garden thrives effortlessly.',
-      route: '/quadra_screens/screen1',// change the route to the correct one
+      desc: 'Manage up to 8 valves with precision scheduling.',
+      route: '/quadra_screens/screen1',
       image: require('../../assets/images/Octa.jpg'),
     },
   ];
 
+  const userPermissions: string[] = userProducts;
+
   return (
     <Background>
-      <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.container}>
-          <View style={styles.titcontainer}>
-          <Text style={[styles.title, { left:35,top:-15 }]}>Welcome</Text>
-
-            <Pressable style={styles.logoutButton} onPress={handleLogout}>
-              <Text style={styles.logoutText}>Logout</Text>
-            </Pressable>
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>Menu</Text>
+            <LogoutButton onPress={handleLogout} />
           </View>
 
-          <View style={styles.box}>
+          <View style={styles.grid}>
             {items.map((item) => {
               const isDisabled = !userPermissions.includes(item.name);
-              console.log('Item:', item.name, 'Disabled:', isDisabled);
 
               return (
                 <Pressable
                   key={item.name}
-                  onPress={() => !isDisabled && router.push(item.route as any)}
+                  onPress={() => !isDisabled && router.push(item.route)}
                   onPressIn={() => !isDisabled && setHovered(item.name)}
                   onPressOut={() => setHovered(null)}
-                  style={[styles.item, isDisabled && styles.disabledItem, hovered === item.name && styles.hoveredItem]}
+                  style={[
+                    styles.card,
+                    hovered === item.name && styles.hovered,
+                    isDisabled && styles.disabledCard,
+                  ]}
                 >
-                  <View style={styles.imageContainer}>
-                    <Image source={item.image} style={[styles.image, hovered === item.name && styles.imageZoom]} />
-                  </View>
-                  <Text style={[styles.title, isDisabled && styles.disabledText]}>{item.name}</Text>
+                  <Image source={item.image} style={styles.image} />
+                  <Text style={[styles.cardTitle, isDisabled && styles.disabledText]}>
+                    {item.name}
+                  </Text>
                   <Text style={styles.desc}>{item.desc}</Text>
+
                   <Pressable
-                    onPress={() => !isDisabled && router.replace(item.route as any)}
-                    style={({ pressed }) => [styles.learnMore, pressed && styles.pressed, hovered === item.name && styles.buttonSlide]}
+                    onPress={() => !isDisabled && router.replace(item.route)}
+                    style={({ pressed }) => [
+                      styles.knowMore,
+                      pressed && styles.pressed,
+                      hovered === item.name && styles.knowMoreHovered,
+                    ]}
                   >
-                    <Text style={styles.learnText}>Know More</Text>
+                    <Text style={styles.knowMoreText}>Know More</Text>
                   </Pressable>
                 </Pressable>
               );
@@ -127,10 +132,12 @@ export default function LandingScreen() {
           </View>
         </View>
       </ScrollView>
-    
     </Background>
   );
 }
+
+const screenWidth = Dimensions.get('window').width;
+const cardWidth = screenWidth > 700 ? 320 : screenWidth * 0.85;
 
 const styles = StyleSheet.create({
   scrollContainer: {
@@ -143,101 +150,86 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 50,
   },
-  titcontainer: {
+  header: {
+    width: '80%',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    width: '90%',
-    paddingHorizontal: 20,
     marginBottom: 20,
+    paddingHorizontal: 10,
   },
-  box: {
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#000',
+    fontFamily: 'Montserrat',
+  },
+  grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
   },
-  item: {
-    padding: 20,
-    backgroundColor: '#71BC78',
-    borderRadius: 12,
-    width: 300,
-    alignItems: 'center',
-    marginBottom: 30,
-    elevation: 5,
-  },
-  hoveredItem: {
-    transform: [{ scale: 1.05 }],
+  card: {
+  backgroundColor: '#71BC78',
+  borderRadius: 12,
+  width: 300, // Reduced width to 90% of screen width
+  minHeight: 350, // Added height for uniform card size
+  padding: 20,
+  margin: 10,
+  alignItems: 'center',
+  elevation: 5,
+},
+  
+  hovered: {
+    transform: [{ scale: 1.02 }],
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.2,
     shadowRadius: 10,
   },
-  disabledItem: {
+  disabledCard: {
     backgroundColor: '#D0E1D6',
     opacity: 0.6,
   },
-  imageContainer: {
-    overflow: 'hidden',
-    borderRadius: 10,
-  },
   image: {
-    width: 150,
+    width: 160,
     height: 120,
     marginBottom: 10,
     borderRadius: 10,
   },
-  imageZoom: {
-    transform: [{ scale: 1.1 }],
-  },
-  title: {
-    fontSize: 24,
+  cardTitle: {
+    fontSize: 22,
     fontWeight: 'bold',
-    color: '000',
+    color: '#000',
     fontFamily: 'Montserrat',
   },
   disabledText: {
-    color: '#818181',
+    color: '#888',
   },
   desc: {
     marginTop: 5,
     fontSize: 14,
-    color: '000',
-    lineHeight: 22,
     textAlign: 'center',
+    color: '#000',
+    lineHeight: 20,
+    flex: 1,
   },
-  learnMore: {
-    marginTop: 10,
-    paddingVertical: 5,
-    paddingHorizontal: 10,
+  knowMore: {
+    marginTop: 15,
     backgroundColor: '#00693E',
     borderRadius: 5,
-    flexDirection: 'row',
-    alignItems: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
   },
-  buttonSlide: {
-    transform: [{ translateY: -5 }],
+  knowMoreHovered: {
+    transform: [{ translateY: -2 }],
   },
-  learnText: {
+  knowMoreText: {
     color: '#FFF',
     fontSize: 14,
+    fontWeight: '600',
   },
   pressed: {
     backgroundColor: '#5E9473',
   },
-  logoutButton: {
-    marginBottom: 20,
-    padding: 10,
-    backgroundColor: '#D9534F',
-    borderRadius: 5,
-    alignItems: 'center',
-    width: 120,
-  },
-  logoutText: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
 });
-
-
-
