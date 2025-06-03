@@ -8,6 +8,7 @@ import {
   Alert,
   ScrollView,
   Dimensions,
+  ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -15,11 +16,19 @@ import Constants from 'expo-constants';
 
 import Background from '../../components_ad/Background';
 
+type ProductItem = {
+  name: string;
+  desc: string;
+  route: string;
+  image: any; // require returns number, could be typed better if needed
+};
+
 export default function LandingScreen() {
   const router = useRouter();
   const [hovered, setHovered] = useState<string | null>(null);
-  const [userProducts, setUserProducts] = useState([]);
-  const [userId, setUserId] = useState('');
+  const [userProducts, setUserProducts] = useState<string[]>([]);
+  const [userId, setUserId] = useState<string>('');
+  const [loading, setLoading] = useState(true);
 
   const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL ?? '';
 
@@ -29,24 +38,30 @@ export default function LandingScreen() {
         const storedUserId = await AsyncStorage.getItem('userID');
         if (!storedUserId) {
           Alert.alert('Error', 'User not logged in');
+          setLoading(false);
           return;
         }
 
         setUserId(storedUserId);
 
         const response = await fetch(`${API_BASE_URL}/device/controller/${storedUserId}`);
-        const data = await response.json();
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const data: string[] = await response.json();
         setUserProducts(data);
       } catch (err) {
         console.error('Fetch error:', err);
         Alert.alert('Failed to fetch user data');
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchUserData();
   }, []);
 
-  const items = [
+  const items: ProductItem[] = [
     {
       name: 'Uno',
       desc: 'A single valve system for precise, Wifi/4G-enabled watering of up to 100 plants, all in a weatherproof IP65 design.',
@@ -73,14 +88,24 @@ export default function LandingScreen() {
     },
   ];
 
-  const userPermissions: string[] = userProducts;
+  // userProducts expected to be array of strings, so check inclusion here
+  const userPermissions = userProducts;
+
+  if (loading) {
+    return (
+      <Background>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#00693E" />
+          <Text style={{ marginTop: 10 }}>Loading your devices...</Text>
+        </View>
+      </Background>
+    );
+  }
 
   return (
     <Background>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.container}>
-          {/* Removed Header with Menu text and Logout button */}
-
           <View style={styles.grid}>
             {items.map((item) => {
               const isDisabled = !userPermissions.includes(item.name);
@@ -96,6 +121,7 @@ export default function LandingScreen() {
                     hovered === item.name && styles.hovered,
                     isDisabled && styles.disabledCard,
                   ]}
+                  disabled={isDisabled}
                 >
                   <Image source={item.image} style={styles.image} />
                   <Text style={[styles.cardTitle, isDisabled && styles.disabledText]}>
@@ -110,6 +136,7 @@ export default function LandingScreen() {
                       pressed && styles.pressed,
                       hovered === item.name && styles.knowMoreHovered,
                     ]}
+                    disabled={isDisabled}
                   >
                     <Text style={styles.knowMoreText}>Know More</Text>
                   </Pressable>
@@ -126,6 +153,11 @@ export default function LandingScreen() {
 const screenWidth = Dimensions.get('window').width;
 
 const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   scrollContainer: {
     flexGrow: 1,
     paddingVertical: 20,
