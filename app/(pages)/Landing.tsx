@@ -14,7 +14,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 
 import Background from '../../components_ad/Background';
-import LogoutButton from '../../components_ad/Logout'; // Button with icon & "Logout" text
 
 export default function LandingScreen() {
   const router = useRouter();
@@ -46,15 +45,6 @@ export default function LandingScreen() {
 
     fetchUserData();
   }, []);
-
-  const handleLogout = async () => {
-    try {
-      await AsyncStorage.clear();
-      router.replace('/');
-    } catch (error) {
-      Alert.alert('Logout Failed');
-    }
-  };
 
   const items = [
     {
@@ -89,10 +79,7 @@ export default function LandingScreen() {
     <Background>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.container}>
-          <View style={styles.header}>
-            <Text style={styles.headerTitle}>Menu</Text>
-            <LogoutButton onPress={handleLogout} />
-          </View>
+          {/* Removed Header with Menu text and Logout button */}
 
           <View style={styles.grid}>
             {items.map((item) => {
@@ -137,7 +124,6 @@ export default function LandingScreen() {
 }
 
 const screenWidth = Dimensions.get('window').width;
-const cardWidth = screenWidth > 700 ? 320 : screenWidth * 0.85;
 
 const styles = StyleSheet.create({
   scrollContainer: {
@@ -150,36 +136,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 50,
   },
-  header: {
-    width: '80%',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-    paddingHorizontal: 10,
-  },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#000',
-    fontFamily: 'Montserrat',
-  },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
   },
   card: {
-  backgroundColor: '#71BC78',
-  borderRadius: 12,
-  width: 300, // Reduced width to 90% of screen width
-  minHeight: 350, // Added height for uniform card size
-  padding: 20,
-  margin: 10,
-  alignItems: 'center',
-  elevation: 5,
-},
-  
+    backgroundColor: '#71BC78',
+    borderRadius: 12,
+    width: 300,
+    minHeight: 350,
+    padding: 20,
+    margin: 10,
+    alignItems: 'center',
+    elevation: 5,
+  },
   hovered: {
     transform: [{ scale: 1.02 }],
     shadowColor: '#000',

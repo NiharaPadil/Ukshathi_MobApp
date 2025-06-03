@@ -1,8 +1,4 @@
 
-
-
-
-
 // index.tsx
 
 import React, { useState, useEffect, useRef } from 'react';

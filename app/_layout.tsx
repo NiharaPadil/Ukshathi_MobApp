@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { DrawerLayoutAndroid, View, Text, Pressable, StyleSheet, Linking } from 'react-native';
+import { DrawerLayoutAndroid, View, Pressable, StyleSheet, Linking } from 'react-native';
 import { Stack, useRouter, usePathname } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -21,33 +21,44 @@ export default function Layout() {
 
   const renderDrawerContent = () => (
     <LinearGradient
-      colors={['#4CAF50', '#A8D5BA', '#E6F2E6', '#ffffff']} // leaf green to white gradient
+      colors={['#4CAF50', '#A8D5BA', '#E6F2E6', '#ffffff']}
       style={styles.drawer}
     >
-      <Text style={styles.drawerTitle}>☰</Text>
+      {/* Home Icon */}
+      <Pressable onPress={() => navigateTo('/Landing')} style={styles.drawerItem}>
+        <MaterialCommunityIcons name="home-outline" size={36} color="#000" />
+      </Pressable>
 
+      {/* Notifications */}
       <Pressable onPress={() => navigateTo('/NotificationsScreen')} style={styles.drawerItem}>
-        <MaterialCommunityIcons name="bell-outline" size={24} color="#000" />
-      </Pressable>
-      <Pressable onPress={() => navigateTo('/AboutUsScreen')} style={styles.drawerItem}>
-        <MaterialCommunityIcons name="information-outline" size={24} color="#000" />
-      </Pressable>
-      <Pressable onPress={() => navigateTo('/ContactScreen')} style={styles.drawerItem}>
-        <MaterialCommunityIcons name="phone-outline" size={24} color="#000" />
-      </Pressable>
-      <Pressable onPress={() => navigateTo('/Queries')} style={styles.drawerItem}>
-        <MaterialCommunityIcons name="chat-question-outline" size={24} color="#000" />
+        <MaterialCommunityIcons name="bell-outline" size={36} color="#000" />
       </Pressable>
 
+      {/* About Us */}
+      <Pressable onPress={() => navigateTo('/AboutUsScreen')} style={styles.drawerItem}>
+        <MaterialCommunityIcons name="information-outline" size={36} color="#000" />
+      </Pressable>
+
+      {/* Contact */}
+      <Pressable onPress={() => navigateTo('/ContactScreen')} style={styles.drawerItem}>
+        <MaterialCommunityIcons name="phone-outline" size={36} color="#000" />
+      </Pressable>
+
+      {/* Queries */}
+      <Pressable onPress={() => navigateTo('/Queries')} style={styles.drawerItem}>
+        <MaterialCommunityIcons name="chat-question-outline" size={36} color="#000" />
+      </Pressable>
+
+      {/* Social icons at bottom */}
       <View style={styles.socialContainer}>
-        <Pressable onPress={() => Linking.openURL('https://instagram.com/yourpage')}>
-          <MaterialCommunityIcons name="instagram" size={22} color="#E1306C" />
+        <Pressable onPress={() => Linking.openURL('https://instagram.com/yourpage')} style={styles.socialIcon}>
+          <MaterialCommunityIcons name="instagram" size={30} color="#E1306C" />
         </Pressable>
-        <Pressable onPress={() => Linking.openURL('https://linkedin.com/company/ukshati-technologies')}>
-          <MaterialCommunityIcons name="linkedin" size={22} color="#0077b5" />
+        <Pressable onPress={() => Linking.openURL('https://linkedin.com/company/ukshati-technologies')} style={styles.socialIcon}>
+          <MaterialCommunityIcons name="linkedin" size={30} color="#0077b5" />
         </Pressable>
-        <Pressable onPress={() => Linking.openURL('https://facebook.com/yourpage')}>
-          <MaterialCommunityIcons name="facebook" size={22} color="#3b5998" />
+        <Pressable onPress={() => Linking.openURL('https://facebook.com/yourpage')} style={styles.socialIcon}>
+          <MaterialCommunityIcons name="facebook" size={30} color="#3b5998" />
         </Pressable>
       </View>
     </LinearGradient>
@@ -61,11 +72,7 @@ export default function Layout() {
       renderNavigationView={isIndex ? () => <View /> : renderDrawerContent}
     >
       <View style={styles.container}>
-        {!isIndex && (
-          <Pressable onPress={openDrawer} style={styles.menuButton}>
-            <Text style={styles.menuText}>☰</Text>
-          </Pressable>
-        )}
+        {/* Menu button removed */}
 
         <Stack initialRouteName="index" screenOptions={{ headerShown: false }}>
           <Stack.Screen name="index" />
@@ -86,40 +93,26 @@ export default function Layout() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  menuButton: {
-    padding: 10,
-    backgroundColor: "#fff",
-    borderRadius: 50,
-    elevation: 4,
-    margin: 10,
-    position: "absolute",
-    top: 100,
-    left: 20,
-    zIndex: 1,
-  },
-  menuText: { fontSize: 20, fontWeight: 'bold' },
   drawer: {
     flex: 1,
-    paddingVertical: 70,
-    alignItems: "center",
+    paddingVertical: 120,
+    paddingHorizontal: 15,
     borderTopRightRadius: 0,
     borderBottomRightRadius: 0,
     overflow: 'hidden',
-  },
-  drawerTitle: {
-    fontSize: 22,
-    fontWeight: "bold",
-    marginBottom: 30,
+    alignItems: 'center',
   },
   drawerItem: {
-    marginVertical: 15,
-    alignItems: "center",
+    marginVertical: 10,
   },
   socialContainer: {
     marginTop: 'auto',
-    marginBottom: 10,
+    marginBottom: 16,
     flexDirection: "column",
     alignItems: "center",
     gap: 10,
   },
+  socialIcon: {
+    marginVertical: 4,
+  }
 });
