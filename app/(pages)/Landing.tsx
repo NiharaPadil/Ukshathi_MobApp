@@ -102,8 +102,8 @@ export default function LandingScreen() {
     label: string;
     icon: React.ComponentProps<typeof MaterialCommunityIcons>['name'];
   }[] = [
-    { key: 'About', label: 'About Us', icon: 'information' },
-    { key: 'Notifications', label: 'Notifications', icon: 'bell' },
+    { key: 'About', label: 'About', icon: 'information' },
+    { key: 'Notifications', label: 'Notification', icon: 'bell' },
     { key: 'Contact', label: 'Contact', icon: 'phone' },
     { key: 'Queries', label: 'Queries', icon: 'message-text' },
   ];
@@ -338,10 +338,10 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   footerLabel: {
-    fontSize: 12,
+    fontSize: 10,
     color: '#666',
     marginTop: 2,
-    fontWeight: '600',
+    fontWeight: '500',
   },
   footerLabelActive: {
     color: '#388E3C',

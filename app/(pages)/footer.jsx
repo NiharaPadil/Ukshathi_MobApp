@@ -57,7 +57,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   tabText: {
-    fontSize: 12,
+    fontSize: 10,
     marginTop: 4,
     fontWeight: '600',
   },
