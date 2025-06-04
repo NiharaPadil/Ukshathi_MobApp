@@ -1,5 +1,4 @@
 // /app/(pages)/_layout.tsx
-// app/(pages)/_layout.tsx
 import React, { useRef } from 'react';
 import {
   DrawerLayoutAndroid,
