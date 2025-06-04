@@ -95,6 +95,19 @@ export default function Screen1() {
   return (
     <BackgroundImage>
       <View style={styles.container}>
+        {/* Top-Left Back Button */}
+        <View style={styles.topLeftButton}>
+          <BackButton
+            onPress={() => {
+              if (router.canGoBack()) {
+                router.back();
+              } else {
+                router.replace('/Landing');
+              }
+            }}
+          />
+        </View>
+
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.headerText}>Nodes</Text>
@@ -140,17 +153,6 @@ export default function Screen1() {
             ))
           )}
         </View>
-
-        {/* ✅ Fixed Back Button */}
-        <BackButton
-          onPress={() => {
-            if (router.canGoBack()) {
-              router.back();
-            } else {
-              router.replace('/Landing'); // Make sure this matches your route name
-            }
-          }}
-        />
       </View>
     </BackgroundImage>
   );
@@ -196,10 +198,13 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingHorizontal: 20,
   },
-  backButton: {
+  topLeftButton: {
     position: 'absolute',
-    bottom: 30,
-    alignSelf: 'center',
-    padding: 10,
+    top: 40,
+    left: 20,
+    zIndex: 10,
+    backgroundColor: 'rgba(255,255,255,0.6)',
+    borderRadius: 30,
+    padding: 6,
   },
 });
