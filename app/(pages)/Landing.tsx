@@ -17,12 +17,15 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 import Background from '../../components_ad/Background';
 
+const FOOTER_HEIGHT = 70;
+
 export default function LandingScreen() {
   const router = useRouter();
   const [hovered, setHovered] = useState<string | null>(null);
   const [userProducts, setUserProducts] = useState([]);
   const [userId, setUserId] = useState('');
   const glowAnim = useRef(new Animated.Value(0.7)).current;
+  const [activeTab, setActiveTab] = useState('About');
 
   const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL ?? '';
 
@@ -93,9 +96,40 @@ export default function LandingScreen() {
 
   const userPermissions: string[] = userProducts;
 
+  // Footer tab items:
+  const footerTabs: {
+    key: string;
+    label: string;
+    icon: React.ComponentProps<typeof MaterialCommunityIcons>['name'];
+  }[] = [
+    { key: 'About', label: 'About Us', icon: 'information' },
+    { key: 'Notifications', label: 'Notifications', icon: 'bell' },
+    { key: 'Contact', label: 'Contact', icon: 'phone' },
+    { key: 'Queries', label: 'Queries', icon: 'message-text' },
+  ];
+
+  // Handle footer tab press navigation:
+  const handleTabPress = (key: string) => {
+    setActiveTab(key);
+    switch (key) {
+      case 'About':
+        router.push('/AboutUsScreen');
+        break;
+      case 'Notifications':
+        router.push('/NotificationsScreen');
+        break;
+      case 'Contact':
+        router.push('/ContactScreen');
+        break;
+      case 'Queries':
+        router.push('/Queries');
+        break;
+    }
+  };
+
   return (
     <Background>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <ScrollView contentContainerStyle={[styles.scrollContainer, { paddingBottom: FOOTER_HEIGHT + 20 }]}>
         <View style={styles.container}>
           {/* Title section with mirrored leaf */}
           <Animated.View style={[styles.productsHeader, { opacity: glowAnim }]}>
@@ -147,6 +181,33 @@ export default function LandingScreen() {
           </View>
         </View>
       </ScrollView>
+
+      {/* FOOTER */}
+      <View style={styles.footerContainer}>
+        {footerTabs.map(({ key, label, icon }) => {
+          const isActive = activeTab === key;
+          return (
+            <Pressable
+              key={key}
+              onPress={() => handleTabPress(key)}
+              style={({ pressed }) => [
+                styles.footerTab,
+                isActive && styles.footerTabActive,
+                pressed && styles.footerTabPressed,
+              ]}
+            >
+              <MaterialCommunityIcons
+                name={icon}
+                size={28}
+                color={isActive ? '#388E3C' : '#666'}
+              />
+              <Text style={[styles.footerLabel, isActive && styles.footerLabelActive]}>
+                {label}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
     </Background>
   );
 }
@@ -175,7 +236,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '700',
     color: '#2E7D32',
-    fontFamily: 'cursive', // You can replace with a loaded custom font like 'Pacifico-Regular' if needed
+    fontFamily: 'cursive',
   },
   grid: {
     flexDirection: 'row',
@@ -243,5 +304,47 @@ const styles = StyleSheet.create({
   },
   pressed: {
     backgroundColor: '#5E9473',
+  },
+
+  // Footer styles
+  footerContainer: {
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+    height: FOOTER_HEIGHT,
+    backgroundColor: '#f9f9f9',
+    borderTopColor: '#ddd',
+    borderTopWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    elevation: 15,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: -2 },
+    shadowRadius: 10,
+  },
+  footerTab: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 6,
+  },
+  footerTabActive: {
+    borderTopWidth: 3,
+    borderTopColor: '#388E3C',
+  },
+  footerTabPressed: {
+    opacity: 0.6,
+  },
+  footerLabel: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 2,
+    fontWeight: '600',
+  },
+  footerLabelActive: {
+    color: '#388E3C',
+    fontWeight: '700',
   },
 });
