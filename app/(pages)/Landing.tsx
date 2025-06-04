@@ -1,3 +1,4 @@
+// /app/Landing.tsx
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -9,25 +10,24 @@ import {
   ScrollView,
   Dimensions,
   ActivityIndicator,
+  ImageSourcePropType,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
-
-import Background from '../../components_ad/Background';
+import Background from '../../components_ad/Background'; // Make sure this path is correct
 
 type ProductItem = {
   name: string;
   desc: string;
   route: string;
-  image: any; // require returns number, could be typed better if needed
+  image: ImageSourcePropType;
 };
 
 export default function LandingScreen() {
   const router = useRouter();
   const [hovered, setHovered] = useState<string | null>(null);
   const [userProducts, setUserProducts] = useState<string[]>([]);
-  const [userId, setUserId] = useState<string>('');
   const [loading, setLoading] = useState(true);
 
   const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL ?? '';
@@ -42,12 +42,8 @@ export default function LandingScreen() {
           return;
         }
 
-        setUserId(storedUserId);
-
         const response = await fetch(`${API_BASE_URL}/device/controller/${storedUserId}`);
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
+        if (!response.ok) throw new Error('Network response was not ok');
         const data: string[] = await response.json();
         setUserProducts(data);
       } catch (err) {
@@ -88,9 +84,6 @@ export default function LandingScreen() {
     },
   ];
 
-  // userProducts expected to be array of strings, so check inclusion here
-  const userPermissions = userProducts;
-
   if (loading) {
     return (
       <Background>
@@ -108,12 +101,12 @@ export default function LandingScreen() {
         <View style={styles.container}>
           <View style={styles.grid}>
             {items.map((item) => {
-              const isDisabled = !userPermissions.includes(item.name);
+              const isDisabled = !userProducts.includes(item.name);
 
               return (
                 <Pressable
                   key={item.name}
-                  onPress={() => !isDisabled && router.push(item.route)}
+                  onPress={() => !isDisabled && router.push(item.route as any)}
                   onPressIn={() => !isDisabled && setHovered(item.name)}
                   onPressOut={() => setHovered(null)}
                   style={[
@@ -130,7 +123,7 @@ export default function LandingScreen() {
                   <Text style={styles.desc}>{item.desc}</Text>
 
                   <Pressable
-                    onPress={() => !isDisabled && router.replace(item.route)}
+                    onPress={() => !isDisabled && router.replace(item.route as any)}
                     style={({ pressed }) => [
                       styles.knowMore,
                       pressed && styles.pressed,
@@ -204,7 +197,6 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: 'bold',
     color: '#000',
-    fontFamily: 'Montserrat',
   },
   disabledText: {
     color: '#888',

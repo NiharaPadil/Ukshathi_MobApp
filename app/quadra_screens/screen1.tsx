@@ -20,14 +20,12 @@ export default function Screen1() {
   };
 
   const router = useRouter();
-  const [nodes, setNodes] = useState<NodeType[]>([]); // State to store fetched nodes
-  const [loading, setLoading] = useState(true); // Loading state
-  const [userID, setUserID] = useState<string | null>(null); // Store userID
+  const [nodes, setNodes] = useState<NodeType[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [userID, setUserID] = useState<string | null>(null);
 
-  // Create an animated value for the wobble effect
   const shakeAnim = useRef(new Animated.Value(0)).current;
 
-  // Start the wobble animation when the component mounts
   useEffect(() => {
     Animated.loop(
       Animated.sequence([
@@ -50,11 +48,10 @@ export default function Screen1() {
     ).start();
   }, []);
 
-  // Fetch userID from AsyncStorage
   useEffect(() => {
     const fetchUserID = async () => {
       try {
-        const storedUserID = await AsyncStorage.getItem('userID'); // Retrieve stored userID
+        const storedUserID = await AsyncStorage.getItem('userID');
         if (storedUserID) {
           setUserID(storedUserID);
           fetchNodes(storedUserID);
@@ -67,7 +64,6 @@ export default function Screen1() {
     fetchUserID();
   }, []);
 
-  // Fetch nodes from API
   const fetchNodes = async (userID: string) => {
     try {
       const response = await fetch(`${API_BASE_URL}/device/nodes?userID=${userID}`);
@@ -82,20 +78,17 @@ export default function Screen1() {
     }
   };
 
-  // Handle node press
   const handleNodePress = (nodeID: string | number) => {
     router.push({ pathname: './screen2', params: { id: nodeID } });
   };
 
-  // Group nodes by controllerID
   const groupedNodes: Record<string, NodeType[]> = nodes.reduce((acc, node) => {
-    const controllerID = String(node.controllerID); // Ensure controllerID is a string
+    const controllerID = String(node.controllerID);
     if (!acc[controllerID]) acc[controllerID] = [];
     acc[controllerID].push(node);
     return acc;
   }, {} as Record<string, NodeType[]>);
 
-  // Get the first node's firstName and lastName (if available)
   const firstName = nodes.length > 0 ? nodes[0].firstName : '';
   const lastName = nodes.length > 0 ? nodes[0].lastName : '';
 
@@ -106,27 +99,25 @@ export default function Screen1() {
         <View style={styles.header}>
           <Text style={styles.headerText}>Nodes</Text>
         </View>
-        
 
         {/* User Info with Wobble Animation */}
         <Animated.View
-  style={[
-    styles.userInfo,
-    {
-      transform: [
-        {
-          translateX: shakeAnim, // Apply shakeAnim to translateX for horizontal shake
-        },
-      ],
-    },
-  ]}
->
+          style={[
+            styles.userInfo,
+            {
+              transform: [
+                {
+                  translateX: shakeAnim,
+                },
+              ],
+            },
+          ]}
+        >
           <Text style={styles.userText}>
             Hello <Text style={{ fontWeight: 'bold' }}>{firstName} {lastName}</Text> !
           </Text>
           <Image source={require('../../assets/images/Quadra.jpg')} style={styles.userImage} />
         </Animated.View>
-       
 
         {/* Node List */}
         <View style={styles.nodeList}>
@@ -135,10 +126,7 @@ export default function Screen1() {
           ) : (
             Object.keys(groupedNodes).map((controllerID) => (
               <View key={controllerID}>
-                {/* Show Controller ID as Section Header */}
                 <Text style={styles.controllerHeader}>Controller {controllerID}</Text>
-
-                {/* Display Nodes Under Each Controller */}
                 {groupedNodes[controllerID].map((node) => (
                   <Pressable
                     key={node.nodeID}
@@ -152,8 +140,17 @@ export default function Screen1() {
             ))
           )}
         </View>
- 
-        <BackButton onPress={() => router.back()} />
+
+        {/* ✅ Fixed Back Button */}
+        <BackButton
+          onPress={() => {
+            if (router.canGoBack()) {
+              router.back();
+            } else {
+              router.replace('/Landing'); // Make sure this matches your route name
+            }
+          }}
+        />
       </View>
     </BackgroundImage>
   );
@@ -187,7 +184,7 @@ const styles = StyleSheet.create({
   userImage: {
     width: 74,
     height: 74,
-    borderRadius: 37, // Make the image circular
+    borderRadius: 37,
   },
   controllerHeader: {
     fontSize: 20,

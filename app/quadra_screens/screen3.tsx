@@ -1,3 +1,4 @@
+// screen3.tsx
 import React, { useState, useEffect } from 'react';
 import { View, Text, Pressable, Switch, Modal, Alert, Platform, ActivityIndicator, StyleSheet, ScrollView, AppState } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
