@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -8,10 +8,12 @@ import {
   Alert,
   ScrollView,
   Dimensions,
+  Animated,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 import Background from '../../components_ad/Background';
 
@@ -20,6 +22,7 @@ export default function LandingScreen() {
   const [hovered, setHovered] = useState<string | null>(null);
   const [userProducts, setUserProducts] = useState([]);
   const [userId, setUserId] = useState('');
+  const glowAnim = useRef(new Animated.Value(0.7)).current;
 
   const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL ?? '';
 
@@ -44,6 +47,21 @@ export default function LandingScreen() {
     };
 
     fetchUserData();
+
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(glowAnim, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(glowAnim, {
+          toValue: 0.7,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
   }, []);
 
   const items = [
@@ -79,7 +97,17 @@ export default function LandingScreen() {
     <Background>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.container}>
-          {/* Removed Header with Menu text and Logout button */}
+          {/* Title section with mirrored leaf */}
+          <Animated.View style={[styles.productsHeader, { opacity: glowAnim }]}>
+            <MaterialCommunityIcons name="leaf" size={22} color="#388E3C" />
+            <Text style={styles.productsText}>Products</Text>
+            <MaterialCommunityIcons
+              name="leaf"
+              size={22}
+              color="#388E3C"
+              style={{ transform: [{ scaleX: -1 }] }}
+            />
+          </Animated.View>
 
           <View style={styles.grid}>
             {items.map((item) => {
@@ -134,7 +162,20 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
     alignItems: 'center',
-    paddingTop: 50,
+    paddingTop: 35,
+  },
+  productsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    marginTop: -10,
+    gap: 8,
+  },
+  productsText: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#2E7D32',
+    fontFamily: 'cursive', // You can replace with a loaded custom font like 'Pacifico-Regular' if needed
   },
   grid: {
     flexDirection: 'row',
