@@ -1,4 +1,3 @@
-// Queries.js
 import React, { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
@@ -95,8 +94,8 @@ const QueriesPage = () => {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
       >
-        <ScrollView 
-          contentContainerStyle={[styles.scrollContainer, { paddingBottom: FOOTER_HEIGHT + 20 }]}
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
           showsVerticalScrollIndicator={false}
         >
           <Text style={styles.header}>Queries Section</Text>
@@ -118,7 +117,7 @@ const QueriesPage = () => {
 
           <TextInput
             style={styles.input}
-            placeholder="Query Type (e.g., Technical, Billing)"
+            placeholder="Query Type"
             value={formData.queryType}
             onChangeText={(text) => setFormData({ ...formData, queryType: text })}
           />
@@ -132,69 +131,113 @@ const QueriesPage = () => {
           />
 
           <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
-            <MaterialIcons name="cloud-upload" size={24} color="#388E3C" />
-            <Text style={styles.uploadText}>
-              {formData.image ? 'Image Uploaded' : 'Upload Image'}
-            </Text>
+            <MaterialIcons name="cloud-upload" size={22} color="#fff" />
+            <Text style={styles.uploadText}>Upload Image (Optional)</Text>
           </TouchableOpacity>
 
           {formData.image && (
-            <View style={styles.imagePreview}>
-              <Image source={{ uri: formData.image }} style={styles.previewImage} />
-            </View>
+            <Image source={{ uri: formData.image }} style={styles.previewImage} />
           )}
 
           <TextInput
             style={[styles.input, styles.feedbackInput]}
-            placeholder="Feedback (optional)"
+            placeholder="Additional Feedback (Optional)"
             value={formData.feedback}
             onChangeText={(text) => setFormData({ ...formData, feedback: text })}
             multiline
           />
 
           <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-            <Text style={styles.submitButtonText}>Submit Query</Text>
+            <Text style={styles.submitText}>Submit Query</Text>
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
 
-      {/* Unified Footer */}
-      <Footer activeTab="Queries" />
+      <View style={styles.footerContainer}>
+        <Footer />
+      </View>
     </View>
   );
 };
 
+export default QueriesPage;
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#fff',
   },
   keyboardView: {
     flex: 1,
   },
   scrollContainer: {
-    padding: 20,
-    flexGrow: 1,
+    paddingHorizontal: 16,
+    paddingTop: 20,
+    paddingBottom: FOOTER_HEIGHT + 20,
   },
   header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 25,
-    color: '#2D5A3D',
+    fontSize: 22,
+    fontWeight: '600',
+    marginBottom: 16,
+    color: 'green',
     textAlign: 'center',
   },
   input: {
-    backgroundColor: '#fff',
-    padding: 15,
-    borderRadius: 8,
-    marginBottom: 15,
-    fontSize: 16,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 15,
+    marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: '#e0e0e0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
-    messageInput: {
-      height: 100,
-    },
-  });
-  
-  export default QueriesPage;
+  messageInput: {
+    minHeight: 90,
+    textAlignVertical: 'top',
+  },
+  feedbackInput: {
+    minHeight: 70,
+    textAlignVertical: 'top',
+  },
+  uploadButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#4a90e2',
+    padding: 10,
+    borderRadius: 10,
+    marginBottom: 12,
+    justifyContent: 'center',
+  },
+  uploadText: {
+    color: '#fff',
+    marginLeft: 8,
+    fontSize: 15,
+  },
+  previewImage: {
+    width: '100%',
+    height: 180,
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+  submitButton: {
+    backgroundColor: '#28a745',
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  submitText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  footerContainer: {
+    height: FOOTER_HEIGHT,
+  },
+});
