@@ -1,8 +1,11 @@
+// NotificationsScreen.js
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, TouchableOpacity, Alert, StyleSheet, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
+import Footer from '../(pages)/footer'; // Adjust path as per your project structure
 
+const FOOTER_HEIGHT = 70;
 const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL ?? '';
 
 const NotificationsScreen = () => {
@@ -98,29 +101,36 @@ const NotificationsScreen = () => {
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity
-        style={[styles.button, loadingSave && styles.buttonDisabled]}
-        onPress={handleSaveNotification}
-        disabled={loadingSave || !userId}
-      >
-        {loadingSave ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.buttonText}>Save Notification to DB</Text>
-        )}
-      </TouchableOpacity>
+      <View style={styles.content}>
+        <Text style={styles.header}>Notifications</Text>
+        
+        <TouchableOpacity
+          style={[styles.button, loadingSave && styles.buttonDisabled]}
+          onPress={handleSaveNotification}
+          disabled={loadingSave || !userId}
+        >
+          {loadingSave ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.buttonText}>Save Notification to DB</Text>
+          )}
+        </TouchableOpacity>
 
-      <TouchableOpacity
-        style={[styles.button, loadingPush && styles.buttonDisabled]}
-        onPress={handleReceiveNotification}
-        disabled={loadingPush || !userId}
-      >
-        {loadingPush ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.buttonText}>Trigger Push Notification</Text>
-        )}
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.button, loadingPush && styles.buttonDisabled]}
+          onPress={handleReceiveNotification}
+          disabled={loadingPush || !userId}
+        >
+          {loadingPush ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.buttonText}>Trigger Push Notification</Text>
+          )}
+        </TouchableOpacity>
+      </View>
+
+      {/* Footer */}
+      <Footer activeTab="Notifications" />
     </View>
   );
 };
@@ -130,12 +140,23 @@ export default NotificationsScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 24,
     backgroundColor: '#fff',
   },
+  content: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+    paddingBottom: FOOTER_HEIGHT + 20, // Add space for footer
+  },
+  header: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 30,
+    textAlign: 'center',
+    color: '#2D5A3D',
+  },
   button: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#388E3C',
     padding: 16,
     borderRadius: 8,
     marginBottom: 20,
@@ -147,5 +168,6 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     fontSize: 16,
+    fontWeight: '600',
   },
 });

@@ -1,3 +1,4 @@
+// Queries.js
 import React, { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
@@ -7,8 +8,9 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import { MaterialIcons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
-import Footer from '../(pages)/footer'; // ✅ Adjust path as per your project
+import Footer from '../(pages)/footer'; // Adjust path as per your project structure
 
+const FOOTER_HEIGHT = 70;
 const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL ?? '';
 
 const QueriesPage = () => {
@@ -88,12 +90,15 @@ const QueriesPage = () => {
   };
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={styles.container}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={{ flex: 1 }}
+        style={styles.keyboardView}
       >
-        <ScrollView contentContainerStyle={styles.container}>
+        <ScrollView 
+          contentContainerStyle={[styles.scrollContainer, { paddingBottom: FOOTER_HEIGHT + 20 }]}
+          showsVerticalScrollIndicator={false}
+        >
           <Text style={styles.header}>Queries Section</Text>
 
           <TextInput
@@ -119,7 +124,7 @@ const QueriesPage = () => {
           />
 
           <TextInput
-            style={[styles.input, { height: 100 }]}
+            style={[styles.input, styles.messageInput]}
             placeholder="Your Message"
             value={formData.message}
             onChangeText={(text) => setFormData({ ...formData, message: text })}
@@ -127,14 +132,20 @@ const QueriesPage = () => {
           />
 
           <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
-            <MaterialIcons name="cloud-upload" size={24} color="#4CAF50" />
+            <MaterialIcons name="cloud-upload" size={24} color="#388E3C" />
             <Text style={styles.uploadText}>
               {formData.image ? 'Image Uploaded' : 'Upload Image'}
             </Text>
           </TouchableOpacity>
 
+          {formData.image && (
+            <View style={styles.imagePreview}>
+              <Image source={{ uri: formData.image }} style={styles.previewImage} />
+            </View>
+          )}
+
           <TextInput
-            style={[styles.input, { height: 80 }]}
+            style={[styles.input, styles.feedbackInput]}
             placeholder="Feedback (optional)"
             value={formData.feedback}
             onChangeText={(text) => setFormData({ ...formData, feedback: text })}
@@ -142,61 +153,48 @@ const QueriesPage = () => {
           />
 
           <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-            <Text style={styles.submitButtonText}>Submit</Text>
+            <Text style={styles.submitButtonText}>Submit Query</Text>
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
 
-      {/* ✅ Footer Added Here */}
-      <Footer />
+      {/* Unified Footer */}
+      <Footer activeTab="Queries" />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
+    flex: 1,
     backgroundColor: '#F5F5F5',
-    paddingBottom: 40,
+  },
+  keyboardView: {
+    flex: 1,
+  },
+  scrollContainer: {
+    padding: 20,
+    flexGrow: 1,
   },
   header: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 20,
+    marginBottom: 25,
     color: '#2D5A3D',
     textAlign: 'center',
   },
   input: {
     backgroundColor: '#fff',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 15,
-    fontSize: 16,
-  },
-  uploadButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#E8F5E9',
-    padding: 10,
-    borderRadius: 8,
-    marginBottom: 15,
-  },
-  uploadText: {
-    marginLeft: 10,
-    fontSize: 16,
-    color: '#4CAF50',
-  },
-  submitButton: {
-    backgroundColor: '#4CAF50',
     padding: 15,
     borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 10,
+    marginBottom: 15,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
   },
-  submitButtonText: {
-    color: '#fff',
-    fontSize: 18,
-  },
-});
-
-export default QueriesPage;
+    messageInput: {
+      height: 100,
+    },
+  });
+  
+  export default QueriesPage;
