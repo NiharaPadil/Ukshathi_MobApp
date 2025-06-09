@@ -2,10 +2,11 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, usePathname } from 'expo-router';
 
-const Footer = ({ activeTab = 'Landing' }) => {
+const Footer = () => {
   const router = useRouter();
+  const pathname = usePathname();
 
   const tabs = [
     { key: 'Landing', label: 'Home', icon: 'home', route: '/Landing' },
@@ -13,6 +14,14 @@ const Footer = ({ activeTab = 'Landing' }) => {
     { key: 'Contact', label: 'Contact', icon: 'phone', route: '/ContactScreen' },
     { key: 'Queries', label: 'Queries', icon: 'message-text', route: '/Queries' },
   ];
+
+  // Auto-detect active tab based on current pathname
+  const getActiveTab = () => {
+    const currentTab = tabs.find(tab => pathname === tab.route);
+    return currentTab ? currentTab.key : 'Landing';
+  };
+
+  const activeTab = getActiveTab();
 
   const handleTabPress = (tab) => {
     // Only navigate if it's not already the active tab
