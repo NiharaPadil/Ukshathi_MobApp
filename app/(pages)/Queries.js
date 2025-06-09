@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity,KeyboardAvoidingView,Platform, ScrollView, Image, StyleSheet, Alert } from 'react-native';
+import {
+  View, Text, TextInput, TouchableOpacity,
+  KeyboardAvoidingView, Platform, ScrollView,
+  Image, StyleSheet, Alert
+} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { MaterialIcons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
+import Footer from '../(pages)/footer'; // ✅ Adjust path as per your project
 
 const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL ?? '';
 
@@ -83,131 +88,114 @@ const QueriesPage = () => {
   };
 
   return (
+    <View style={{ flex: 1 }}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
+        <ScrollView contentContainerStyle={styles.container}>
+          <Text style={styles.header}>Queries Section</Text>
 
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={{ flex: 1,padding: 20,backgroundColor: '#F5F5F5',marginTop: 40,marginBottom:20}}
-    >
-    <ScrollView style={styles.container}>
-      {/* Queries Section */}
-      <Text style={styles.header}>Queries Section</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Your Name"
+            value={formData.name}
+            onChangeText={(text) => setFormData({ ...formData, name: text })}
+          />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Your Name"
-        value={formData.name}
-        onChangeText={(text) => setFormData({ ...formData, name: text })}
-      />
+          <TextInput
+            style={styles.input}
+            placeholder="Email Address"
+            value={formData.email}
+            onChangeText={(text) => setFormData({ ...formData, email: text })}
+            keyboardType="email-address"
+          />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Email Address"
-        value={formData.email}
-        onChangeText={(text) => setFormData({ ...formData, email: text })}
-        keyboardType="email-address"
-      />
+          <TextInput
+            style={styles.input}
+            placeholder="Query Type (e.g., Technical, Billing)"
+            value={formData.queryType}
+            onChangeText={(text) => setFormData({ ...formData, queryType: text })}
+          />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Query Type (e.g., Technical, Billing)"
-        value={formData.queryType}
-        onChangeText={(text) => setFormData({ ...formData, queryType: text })}
-      />
+          <TextInput
+            style={[styles.input, { height: 100 }]}
+            placeholder="Your Message"
+            value={formData.message}
+            onChangeText={(text) => setFormData({ ...formData, message: text })}
+            multiline
+          />
 
-      <TextInput
-        style={[styles.input, { height: 100 }]}
-        placeholder="Your Message"
-        value={formData.message}
-        onChangeText={(text) => setFormData({ ...formData, message: text })}
-        multiline
-      />
+          <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
+            <MaterialIcons name="cloud-upload" size={24} color="#4CAF50" />
+            <Text style={styles.uploadText}>
+              {formData.image ? 'Image Uploaded' : 'Upload Image'}
+            </Text>
+          </TouchableOpacity>
 
-      {/* Image Upload */}
-      <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
-        <MaterialIcons name="cloud-upload" size={24} color="#4CAF50" />
-        <Text style={styles.uploadText}>
-          {formData.image ? 'Image Uploaded' : 'Upload Image'}
-        </Text>
-      </TouchableOpacity>
+          <TextInput
+            style={[styles.input, { height: 80 }]}
+            placeholder="Feedback (optional)"
+            value={formData.feedback}
+            onChangeText={(text) => setFormData({ ...formData, feedback: text })}
+            multiline
+          />
 
-      {formData.image && (
-        <Image source={{ uri: formData.image }} style={styles.imagePreview} />
-      )}
+          <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+            <Text style={styles.submitButtonText}>Submit</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </KeyboardAvoidingView>
 
-      {/* Feedback Section */}
-      <Text style={styles.header}>Feedback Section</Text>
-
-      <TextInput
-        style={[styles.input, { height: 100 }]}
-        placeholder="Your Feedback"
-        value={formData.feedback}
-        onChangeText={(text) => setFormData({ ...formData, feedback: text })}
-        multiline
-      />
-
-      {/* Submit Button */}
-      <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-        <Text style={styles.submitText}>Submit</Text>
-      </TouchableOpacity>
-    </ScrollView>
-    </KeyboardAvoidingView>
+      {/* ✅ Footer Added Here */}
+      <Footer />
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     padding: 20,
     backgroundColor: '#F5F5F5',
+    paddingBottom: 40,
   },
   header: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: 'bold',
-    color: '#4CAF50',
     marginBottom: 20,
+    color: '#2D5A3D',
+    textAlign: 'center',
   },
   input: {
-    backgroundColor: '#FFFFFF',
-    padding: 15,
-    borderRadius: 10,
+    backgroundColor: '#fff',
+    padding: 12,
+    borderRadius: 8,
     marginBottom: 15,
     fontSize: 16,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
   },
   uploadButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    padding: 15,
-    borderRadius: 10,
+    backgroundColor: '#E8F5E9',
+    padding: 10,
+    borderRadius: 8,
     marginBottom: 15,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
   },
   uploadText: {
     marginLeft: 10,
     fontSize: 16,
     color: '#4CAF50',
   },
-  imagePreview: {
-    width: '100%',
-    height: 200,
-    borderRadius: 10,
-    marginBottom: 20,
-  },
   submitButton: {
     backgroundColor: '#4CAF50',
     padding: 15,
-    borderRadius: 10,
+    borderRadius: 8,
     alignItems: 'center',
-    marginTop: 20,
-    marginBottom: 50,
+    marginTop: 10,
   },
-  submitText: {
-    color: '#FFFFFF',
+  submitButtonText: {
+    color: '#fff',
     fontSize: 18,
-    fontWeight: 'bold',
   },
 });
 

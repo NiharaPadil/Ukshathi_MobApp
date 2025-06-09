@@ -46,9 +46,7 @@
       }
     },
     "android": {
-      "permissions": [
-        "NOTIFICATIONS"
-      ],
+      "permissions": ["NOTIFICATIONS"],
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/LeafLogo1024.png",
         "backgroundColor": "#ffffff"

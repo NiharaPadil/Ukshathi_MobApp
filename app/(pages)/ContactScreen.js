@@ -1,8 +1,10 @@
+// app/(pages)/ContactScreen.js
 import React from 'react';
 import { View, Text, StyleSheet, Linking, Pressable } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { FontAwesome, MaterialIcons, Entypo } from '@expo/vector-icons';
 import Background from '../../components_ad/Background';
+import Footer from './footer'; // ✅ Make sure the footer file is in the same folder or adjust path accordingly
 
 const ContactScreen = () => {
   const latitude = 12.87607;
@@ -69,6 +71,9 @@ const ContactScreen = () => {
           </View>
         </View>
       </View>
+
+      {/* Footer at the bottom */}
+      <Footer activeTab="Contact" />
     </Background>
   );
 };
@@ -94,13 +99,11 @@ const styles = StyleSheet.create({
     padding: 15,
     marginBottom: 15,
     borderRadius: 10,
-
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 5,
     elevation: 3,
-
     height: 100,
     justifyContent: 'space-between',
   },

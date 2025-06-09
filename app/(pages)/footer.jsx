@@ -1,64 +1,47 @@
-// footer.jsx
-import React, { useState } from 'react';
-import { View, Text, Pressable, StyleSheet, Animated } from 'react-native';
-import { MaterialIcons, MaterialCommunityIcons, FontAwesome5, Ionicons } from '@expo/vector-icons';
+// app/(pages)/footer.js
+import React from 'react';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 
-const tabs = [
-  { name: 'Home', icon: (color, size) => <MaterialIcons name="home" size={size} color={color} />, route: 'landing' },
-  { name: 'Notifications', icon: (color, size) => <Ionicons name="notifications" size={size} color={color} />, route: 'notifications' },
-  { name: 'Contact', icon: (color, size) => <FontAwesome5 name="phone" size={size} color={color} />, route: 'contact' },
-  { name: 'Queries', icon: (color, size) => <MaterialCommunityIcons name="comment-question" size={size} color={color} />, route: 'queries' },
-];
+const Footer = ({ activeTab }) => {
+  const router = useRouter();
 
-export default function Footer({ currentRoute, onTabPress }) {
-  const [selected, setSelected] = useState(currentRoute || 'about-us');
-
-  const handlePress = (route) => {
-    setSelected(route);
-    if (onTabPress) onTabPress(route);
-  };
+  const tabs = [
+    { key: 'Landing', label: 'Home', icon: 'home' },
+    { key: 'NotificationsScreen', label: 'Notification', icon: 'bell' },
+    { key: 'ContactScreen', label: 'Contact', icon: 'phone' },
+    { key: 'Queries', label: 'Queries', icon: 'message-text' },
+  ];
 
   return (
-    <View style={styles.footerContainer}>
-      {tabs.map((tab) => {
-        const focused = selected === tab.route;
-        const color = focused ? '#3CB371' : '#999';
-        const scale = focused ? 1.2 : 1;
-
-        return (
-          <Pressable
-            key={tab.route}
-            onPress={() => handlePress(tab.route)}
-            style={styles.tabButton}
-          >
-            <Animated.View style={{ transform: [{ scale }] }}>
-              {tab.icon(color, 28)}
-              <Text style={[styles.tabText, { color }]}>{tab.name}</Text>
-            </Animated.View>
-          </Pressable>
-        );
-      })}
+    <View style={styles.footer}>
+      {tabs.map((tab) => (
+        <Pressable key={tab.key} onPress={() => router.push(`/${tab.key}`)} style={styles.tab}>
+          <MaterialCommunityIcons
+            name={tab.icon}
+            size={24}
+            color={activeTab === tab.key ? '#2D5A3D' : '#888'}
+          />
+          <Text style={{ color: activeTab === tab.key ? '#2D5A3D' : '#888' }}>{tab.label}</Text>
+        </Pressable>
+      ))}
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  footerContainer: {
+  footer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    paddingVertical: 10,
+    padding: 12,
     backgroundColor: '#fff',
-    borderTopColor: '#ddd',
     borderTopWidth: 1,
-    elevation: 10,
+    borderTopColor: '#ccc',
   },
-  tabButton: {
+  tab: {
     alignItems: 'center',
-    flex: 1,
-  },
-  tabText: {
-    fontSize: 10,
-    marginTop: 4,
-    fontWeight: '600',
   },
 });
+
+export default Footer;
