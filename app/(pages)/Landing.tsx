@@ -102,7 +102,7 @@ export default function LandingScreen() {
     label: string;
     icon: React.ComponentProps<typeof MaterialCommunityIcons>['name'];
   }[] = [
-    { key: 'About', label: 'About', icon: 'information' },
+    { key: 'Landing', label: 'Home', icon: 'home' },
     { key: 'Notifications', label: 'Notification', icon: 'bell' },
     { key: 'Contact', label: 'Contact', icon: 'phone' },
     { key: 'Queries', label: 'Queries', icon: 'message-text' },

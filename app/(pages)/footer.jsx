@@ -4,7 +4,7 @@ import { View, Text, Pressable, StyleSheet, Animated } from 'react-native';
 import { MaterialIcons, MaterialCommunityIcons, FontAwesome5, Ionicons } from '@expo/vector-icons';
 
 const tabs = [
-  { name: 'About Us', icon: (color, size) => <MaterialIcons name="info" size={size} color={color} />, route: 'about-us' },
+  { name: 'Home', icon: (color, size) => <MaterialIcons name="home" size={size} color={color} />, route: 'landing' },
   { name: 'Notifications', icon: (color, size) => <Ionicons name="notifications" size={size} color={color} />, route: 'notifications' },
   { name: 'Contact', icon: (color, size) => <FontAwesome5 name="phone" size={size} color={color} />, route: 'contact' },
   { name: 'Queries', icon: (color, size) => <MaterialCommunityIcons name="comment-question" size={size} color={color} />, route: 'queries' },
